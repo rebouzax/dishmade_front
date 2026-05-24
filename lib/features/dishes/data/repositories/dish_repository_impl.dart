@@ -1,8 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../../core/pagination/paginated_response.dart';
 import '../../domain/entities/dish.dart';
 import '../../domain/repositories/dish_repository.dart';
 import '../datasources/dish_remote_datasource.dart';
+import '../dtos/create_dish_request.dart';
+import '../dtos/update_dish_request.dart';
 
 final dishRepositoryProvider = Provider<DishRepository>((ref) {
   final remoteDataSource = ref.watch(dishRemoteDataSourceProvider);
@@ -38,6 +41,42 @@ class DishRepositoryImpl implements DishRepository {
       totalPages: response.totalPages,
       hasPreviousPage: response.hasPreviousPage,
       hasNextPage: response.hasNextPage,
+    );
+  }
+
+  @override
+  Future<String> createDish({
+    required String name,
+    required String description,
+    required double price,
+    required String categoryId,
+  }) {
+    return _remoteDataSource.createDish(
+      CreateDishRequest(
+        name: name,
+        description: description,
+        price: price,
+        categoryId: categoryId,
+      ),
+    );
+  }
+
+  @override
+  Future<void> updateDish({
+    required String id,
+    required String name,
+    required String description,
+    required double price,
+    required String categoryId,
+  }) {
+    return _remoteDataSource.updateDish(
+      id: id,
+      request: UpdateDishRequest(
+        name: name,
+        description: description,
+        price: price,
+        categoryId: categoryId,
+      ),
     );
   }
 }

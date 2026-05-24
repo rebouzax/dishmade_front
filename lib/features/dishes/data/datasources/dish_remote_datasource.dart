@@ -1,10 +1,13 @@
 import 'package:dio/dio.dart';
-import 'package:dishmade_front/core/errors/app_exception.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../../core/constants/api_endpoints.dart';
+import '../../../../core/errors/app_exception.dart';
 import '../../../../core/network/dio_provider.dart';
 import '../../../../core/pagination/paginated_response.dart';
+import '../dtos/create_dish_request.dart';
 import '../dtos/dish_dto.dart';
+import '../dtos/update_dish_request.dart';
 
 final dishRemoteDataSourceProvider = Provider<DishRemoteDataSource>((ref) {
   final dio = ref.watch(dioProvider);
@@ -18,6 +21,13 @@ abstract interface class DishRemoteDataSource {
     bool? isAvailable,
     int pageNumber = 1,
     int pageSize = 20,
+  });
+
+  Future<String> createDish(CreateDishRequest request);
+
+  Future<void> updateDish({
+    required String id,
+    required UpdateDishRequest request,
   });
 }
 
@@ -52,6 +62,32 @@ class DishRemoteDataSourceImpl implements DishRemoteDataSource {
         response.data ?? <String, dynamic>{},
         DishDto.fromJson,
       );
+    } on DioException catch (exception) {
+      throw ApiException.fromDioException(exception);
+    }
+  }
+
+  @override
+  Future<String> createDish(CreateDishRequest request) async {
+    try {
+      final response = await _dio.post<Map<String, dynamic>>(
+        ApiEndpoints.dishes,
+        data: request.toJson(),
+      );
+
+      return response.data?['id']?.toString() ?? '';
+    } on DioException catch (exception) {
+      throw ApiException.fromDioException(exception);
+    }
+  }
+
+  @override
+  Future<void> updateDish({
+    required String id,
+    required UpdateDishRequest request,
+  }) async {
+    try {
+      await _dio.put<void>(ApiEndpoints.dishById(id), data: request.toJson());
     } on DioException catch (exception) {
       throw ApiException.fromDioException(exception);
     }

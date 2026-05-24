@@ -9,4 +9,19 @@ abstract interface class DishRepository {
     int pageNumber = 1,
     int pageSize = 20,
   });
+
+  Future<String> createDish({
+    required String name,
+    required String description,
+    required double price,
+    required String categoryId,
+  });
+
+  Future<void> updateDish({
+    required String id,
+    required String name,
+    required String description,
+    required double price,
+    required String categoryId,
+  });
 }

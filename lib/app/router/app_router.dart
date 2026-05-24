@@ -1,12 +1,14 @@
-import 'package:dishmade_front/features/categories/presentation/pages/categories_page.dart';
-import 'package:dishmade_front/features/orders/presentation/pages/orders_page.dart';
-import 'package:dishmade_front/features/sales_history/presentation/pages/sales_history_page.dart';
-import 'package:dishmade_front/features/tables/presentation/pages/tables_page.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/categories/presentation/pages/categories_page.dart';
 import '../../features/dashboard/presentation/pages/dashboard_page.dart';
+import '../../features/dishes/domain/entities/dish.dart';
+import '../../features/dishes/presentation/pages/dish_form_page.dart';
 import '../../features/dishes/presentation/pages/dishes_page.dart';
+import '../../features/orders/presentation/pages/orders_page.dart';
+import '../../features/sales_history/presentation/pages/sales_history_page.dart';
+import '../../features/tables/presentation/pages/tables_page.dart';
 import 'app_routes.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -20,6 +22,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.dishes,
         builder: (context, state) => const DishesPage(),
+      ),
+      GoRoute(
+        path: AppRoutes.dishForm,
+        builder: (context, state) {
+          final dish = state.extra is Dish ? state.extra as Dish : null;
+
+          return DishFormPage(dish: dish);
+        },
       ),
       GoRoute(
         path: AppRoutes.categories,

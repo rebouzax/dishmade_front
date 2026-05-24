@@ -1,7 +1,9 @@
 import 'package:dishmade_front/features/dishes/domain/entities/dish_category.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../app/router/app_routes.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../categories/presentation/viewmodels/categories_provider.dart';
 import '../viewmodels/dishes_viewmodel.dart';
@@ -56,7 +58,18 @@ class _DishesPageState extends ConsumerState<DishesPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _Header(totalCount: state.totalCount),
+                          _Header(
+                            totalCount: state.totalCount,
+                            onCreatePressed: () async {
+                              final result = await context.push<bool>(
+                                AppRoutes.dishForm,
+                              );
+
+                              if (result == true) {
+                                await viewModel.refresh();
+                              }
+                            },
+                          ),
                           const SizedBox(height: 18),
                           _SearchField(
                             controller: _searchController,
@@ -117,7 +130,19 @@ class _DishesPageState extends ConsumerState<DishesPage> {
                       padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
                       sliver: SliverGrid(
                         delegate: SliverChildBuilderDelegate((context, index) {
-                          return DishCard(dish: state.dishes[index]);
+                          return DishCard(
+                            dish: state.dishes[index],
+                            onTap: () async {
+                              final result = await context.push<bool>(
+                                AppRoutes.dishForm,
+                                extra: state.dishes[index],
+                              );
+
+                              if (result == true) {
+                                await viewModel.refresh();
+                              }
+                            },
+                          );
                         }, childCount: state.dishes.length),
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: crossAxisCount,
@@ -156,8 +181,9 @@ class _DishesPageState extends ConsumerState<DishesPage> {
 
 class _Header extends StatelessWidget {
   final int totalCount;
+  final VoidCallback onCreatePressed;
 
-  const _Header({required this.totalCount});
+  const _Header({required this.totalCount, required this.onCreatePressed});
 
   @override
   Widget build(BuildContext context) {
@@ -187,7 +213,7 @@ class _Header extends StatelessWidget {
           ),
         ),
         FilledButton.icon(
-          onPressed: () {},
+          onPressed: onCreatePressed,
           icon: const Icon(Icons.add_rounded),
           label: const Text('Novo prato'),
         ),

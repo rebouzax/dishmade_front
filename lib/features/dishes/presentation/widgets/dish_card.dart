@@ -6,8 +6,9 @@ import '../../domain/entities/dish.dart';
 
 class DishCard extends StatelessWidget {
   final Dish dish;
+  final VoidCallback? onTap;
 
-  const DishCard({super.key, required this.dish});
+  const DishCard({super.key, required this.dish, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +17,7 @@ class DishCard extends StatelessWidget {
     return Card(
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: () {},
+        onTap: onTap,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
