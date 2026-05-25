@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../app/router/app_routes.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../domain/entities/restaurant_table.dart';
 import '../viewmodels/tables_viewmodel.dart';
@@ -32,6 +34,11 @@ class _TablesPageState extends ConsumerState<TablesPage> {
       appBar: AppBar(
         title: const Text('Mesas'),
         actions: [
+          IconButton(
+            tooltip: 'Home',
+            onPressed: () => context.go(AppRoutes.home),
+            icon: const Icon(Icons.home_rounded),
+          ),
           IconButton(
             tooltip: 'Atualizar',
             onPressed: state.isLoading ? null : viewModel.refresh,

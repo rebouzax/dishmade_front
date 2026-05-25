@@ -1,5 +1,5 @@
-import 'package:dishmade_front/features/dishes/domain/entities/dish_category.dart';
 import '../../../../core/pagination/paginated_response.dart';
+import '../entities/dish_category.dart';
 import '../repositories/category_repository.dart';
 
 class GetCategoriesUseCase {

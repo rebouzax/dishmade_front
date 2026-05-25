@@ -1,4 +1,4 @@
-import 'package:dishmade_front/features/dishes/domain/entities/dish_category.dart';
+import 'package:dishmade_front/features/categories/domain/entities/dish_category.dart';
 
 class CategoryDto {
   final String id;

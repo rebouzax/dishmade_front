@@ -1,8 +1,10 @@
-import 'package:dishmade_front/features/dishes/domain/entities/dish_category.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../../core/pagination/paginated_response.dart';
+import '../../domain/entities/dish_category.dart';
 import '../../domain/repositories/category_repository.dart';
 import '../datasources/category_remote_datasource.dart';
+import '../dtos/create_category_request.dart';
 
 final categoryRepositoryProvider = Provider<CategoryRepository>((ref) {
   final remoteDataSource = ref.watch(categoryRemoteDataSourceProvider);
@@ -36,6 +38,13 @@ class CategoryRepositoryImpl implements CategoryRepository {
       totalPages: response.totalPages,
       hasPreviousPage: response.hasPreviousPage,
       hasNextPage: response.hasNextPage,
+    );
+  }
+
+  @override
+  Future<String> createCategory({required String name, String? description}) {
+    return _remoteDataSource.createCategory(
+      CreateCategoryRequest(name: name, description: description),
     );
   }
 }

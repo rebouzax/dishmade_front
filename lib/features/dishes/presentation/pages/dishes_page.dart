@@ -1,4 +1,4 @@
-import 'package:dishmade_front/features/dishes/domain/entities/dish_category.dart';
+import 'package:dishmade_front/features/categories/domain/entities/dish_category.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -35,6 +35,11 @@ class _DishesPageState extends ConsumerState<DishesPage> {
       appBar: AppBar(
         title: const Text('Cardápio'),
         actions: [
+          IconButton(
+            tooltip: 'Home',
+            onPressed: () => context.go(AppRoutes.home),
+            icon: const Icon(Icons.home_rounded),
+          ),
           IconButton(
             tooltip: 'Atualizar',
             onPressed: state.isLoading ? null : viewModel.refresh,
