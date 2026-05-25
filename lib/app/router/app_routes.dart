@@ -1,7 +1,11 @@
 abstract final class AppRoutes {
+  static const login = '/login';
+
   static const home = '/';
 
   static const dashboard = '/dashboard';
+
+  static const adminClients = '/admin/clients';
 
   static const dishes = '/dishes';
   static const dishForm = '/dishes/form';

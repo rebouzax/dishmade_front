@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../app/router/app_routes.dart';
 import '../../../../app/theme/app_colors.dart';
+import '../../../auth/presentation/viewmodels/auth_controller.dart';
 import '../widgets/home_hero_card.dart';
 import '../widgets/home_module_card.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends ConsumerWidget {
   const HomePage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final modules = [
+  Widget build(BuildContext context, WidgetRef ref) {
+    final List<_HomeModule> modules = [
       _HomeModule(
         title: 'Dashboard',
         description:
@@ -79,6 +81,13 @@ class HomePage extends StatelessWidget {
             onPressed: () => context.push(AppRoutes.dashboard),
             icon: const Icon(Icons.dashboard_rounded),
           ),
+          IconButton(
+            tooltip: 'Sair',
+            onPressed: () {
+              ref.read(authControllerProvider.notifier).logout();
+            },
+            icon: const Icon(Icons.logout_rounded),
+          ),
         ],
       ),
       body: SafeArea(
@@ -94,9 +103,9 @@ class HomePage extends StatelessWidget {
                     child: HomeHeroCard(),
                   ),
                 ),
-                SliverToBoxAdapter(
+                const SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 14, 20, 8),
+                    padding: EdgeInsets.fromLTRB(20, 14, 20, 8),
                     child: _SectionHeader(
                       title: 'Módulos do sistema',
                       subtitle:
