@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import '../../../../core/pagination/paginated_response.dart';
 import '../entities/dish.dart';
 
@@ -24,4 +26,15 @@ abstract interface class DishRepository {
     required double price,
     required String categoryId,
   });
+
+  Future<void> uploadDishImage({
+    required String dishId,
+    required Uint8List bytes,
+    required String fileName,
+    required String contentType,
+  });
+
+  Future<Uint8List> getDishImageBytes({required String dishId});
+
+  Future<void> deleteDishImage({required String dishId});
 }

@@ -6,6 +6,7 @@ class DishesState {
   final List<Dish> dishes;
   final bool isLoading;
   final bool isLoadingMore;
+  final bool isSaving;
   final String? errorMessage;
 
   final String search;
@@ -31,12 +32,14 @@ class DishesState {
     this.totalCount = 0,
     this.totalPages = 0,
     this.hasNextPage = false,
+    this.isSaving = false,
   });
 
   DishesState copyWith({
     List<Dish>? dishes,
     bool? isLoading,
     bool? isLoadingMore,
+    bool? isSaving,
     Object? errorMessage = _unset,
     String? search,
     Object? categoryId = _unset,
@@ -51,6 +54,7 @@ class DishesState {
       dishes: dishes ?? this.dishes,
       isLoading: isLoading ?? this.isLoading,
       isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+      isSaving: isSaving ?? this.isSaving,
       errorMessage: errorMessage == _unset
           ? this.errorMessage
           : errorMessage as String?,
@@ -65,7 +69,6 @@ class DishesState {
       pageSize: pageSize ?? this.pageSize,
       totalCount: totalCount ?? this.totalCount,
       totalPages: totalPages ?? this.totalPages,
-      hasNextPage: hasNextPage ?? this.hasNextPage,
     );
   }
 }

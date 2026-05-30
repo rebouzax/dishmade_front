@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
+import 'dart:typed_data';
 import '../../../../core/pagination/paginated_response.dart';
 import '../../domain/entities/dish.dart';
 import '../../domain/repositories/dish_repository.dart';
@@ -78,5 +78,30 @@ class DishRepositoryImpl implements DishRepository {
         categoryId: categoryId,
       ),
     );
+  }
+
+  @override
+  Future<void> uploadDishImage({
+    required String dishId,
+    required Uint8List bytes,
+    required String fileName,
+    required String contentType,
+  }) {
+    return _remoteDataSource.uploadDishImage(
+      dishId: dishId,
+      bytes: bytes,
+      fileName: fileName,
+      contentType: contentType,
+    );
+  }
+
+  @override
+  Future<Uint8List> getDishImageBytes({required String dishId}) {
+    return _remoteDataSource.getDishImageBytes(dishId: dishId);
+  }
+
+  @override
+  Future<void> deleteDishImage({required String dishId}) {
+    return _remoteDataSource.deleteDishImage(dishId: dishId);
   }
 }

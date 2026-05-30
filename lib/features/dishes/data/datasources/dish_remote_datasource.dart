@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
+import 'dart:typed_data';
 import '../../../../core/constants/api_endpoints.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/network/dio_provider.dart';
@@ -29,6 +29,17 @@ abstract interface class DishRemoteDataSource {
     required String id,
     required UpdateDishRequest request,
   });
+
+  Future<void> uploadDishImage({
+    required String dishId,
+    required Uint8List bytes,
+    required String fileName,
+    required String contentType,
+  });
+
+  Future<Uint8List> getDishImageBytes({required String dishId});
+
+  Future<void> deleteDishImage({required String dishId});
 }
 
 class DishRemoteDataSourceImpl implements DishRemoteDataSource {
@@ -88,6 +99,55 @@ class DishRemoteDataSourceImpl implements DishRemoteDataSource {
   }) async {
     try {
       await _dio.put<void>(ApiEndpoints.dishById(id), data: request.toJson());
+    } on DioException catch (exception) {
+      throw ApiException.fromDioException(exception);
+    }
+  }
+
+  @override
+  Future<void> uploadDishImage({
+    required String dishId,
+    required Uint8List bytes,
+    required String fileName,
+    required String contentType,
+  }) async {
+    try {
+      final formData = FormData.fromMap({
+        'file': MultipartFile.fromBytes(
+          bytes,
+          filename: fileName,
+          contentType: DioMediaType.parse(contentType),
+        ),
+      });
+
+      await _dio.post<void>(
+        ApiEndpoints.dishImage(dishId),
+        data: formData,
+        options: Options(contentType: 'multipart/form-data'),
+      );
+    } on DioException catch (exception) {
+      throw ApiException.fromDioException(exception);
+    }
+  }
+
+  @override
+  Future<Uint8List> getDishImageBytes({required String dishId}) async {
+    try {
+      final response = await _dio.get<List<int>>(
+        ApiEndpoints.dishImage(dishId),
+        options: Options(responseType: ResponseType.bytes),
+      );
+
+      return Uint8List.fromList(response.data ?? const []);
+    } on DioException catch (exception) {
+      throw ApiException.fromDioException(exception);
+    }
+  }
+
+  @override
+  Future<void> deleteDishImage({required String dishId}) async {
+    try {
+      await _dio.delete<void>(ApiEndpoints.dishImage(dishId));
     } on DioException catch (exception) {
       throw ApiException.fromDioException(exception);
     }

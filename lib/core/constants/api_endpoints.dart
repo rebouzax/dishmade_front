@@ -11,6 +11,7 @@ abstract final class ApiEndpoints {
   static const dashboard = '/api/dashboard';
 
   static String dishById(String id) => '/api/dishes/$id';
+  static String dishImage(String id) => '/api/dishes/$id/image';
 
   static String tableById(String id) => '/api/tables/$id';
   static String occupyTable(String id) => '/api/tables/$id/occupy';

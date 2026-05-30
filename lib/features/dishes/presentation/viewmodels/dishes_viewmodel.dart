@@ -1,13 +1,26 @@
+import 'dart:typed_data';
 import 'package:dishmade_front/core/errors/app_exception.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/repositories/dish_repository_impl.dart';
 import '../../domain/usecases/get_dishes_usecase.dart';
+import '../../domain/usecases/delete_dish_image_usecase.dart';
+import '../../domain/usecases/upload_dish_image_usecase.dart';
 import 'dishes_state.dart';
 
 final getDishesUseCaseProvider = Provider<GetDishesUseCase>((ref) {
   final repository = ref.watch(dishRepositoryProvider);
   return GetDishesUseCase(repository);
+});
+
+final uploadDishImageUseCaseProvider = Provider<UploadDishImageUseCase>((ref) {
+  final repository = ref.watch(dishRepositoryProvider);
+  return UploadDishImageUseCase(repository);
+});
+
+final deleteDishImageUseCaseProvider = Provider<DeleteDishImageUseCase>((ref) {
+  final repository = ref.watch(dishRepositoryProvider);
+  return DeleteDishImageUseCase(repository);
 });
 
 final dishesViewModelProvider =
@@ -17,10 +30,14 @@ final dishesViewModelProvider =
 
 class DishesViewModel extends Notifier<DishesState> {
   late final GetDishesUseCase _getDishesUseCase;
+  late final UploadDishImageUseCase _uploadDishImageUseCase;
+  late final DeleteDishImageUseCase _deleteDishImageUseCase;
 
   @override
   DishesState build() {
     _getDishesUseCase = ref.watch(getDishesUseCaseProvider);
+    _uploadDishImageUseCase = ref.watch(uploadDishImageUseCaseProvider);
+    _deleteDishImageUseCase = ref.watch(deleteDishImageUseCaseProvider);
 
     Future.microtask(loadInitial);
 
@@ -116,6 +133,54 @@ class DishesViewModel extends Notifier<DishesState> {
   Future<void> setAvailability(bool? isAvailable) async {
     state = state.copyWith(isAvailable: isAvailable);
     await loadInitial();
+  }
+
+  Future<bool> uploadDishImage({
+    required String dishId,
+    required Uint8List bytes,
+    required String fileName,
+    required String contentType,
+  }) async {
+    state = state.copyWith(isSaving: true, errorMessage: null);
+
+    try {
+      await _uploadDishImageUseCase(
+        dishId: dishId,
+        bytes: bytes,
+        fileName: fileName,
+        contentType: contentType,
+      );
+
+      if (!ref.mounted) return false;
+
+      state = state.copyWith(isSaving: false);
+      return true;
+    } catch (error) {
+      if (!ref.mounted) return false;
+
+      state = state.copyWith(isSaving: false, errorMessage: _mapError(error));
+
+      return false;
+    }
+  }
+
+  Future<bool> deleteDishImage(String dishId) async {
+    state = state.copyWith(isSaving: true, errorMessage: null);
+
+    try {
+      await _deleteDishImageUseCase(dishId: dishId);
+
+      if (!ref.mounted) return false;
+
+      state = state.copyWith(isSaving: false);
+      return true;
+    } catch (error) {
+      if (!ref.mounted) return false;
+
+      state = state.copyWith(isSaving: false, errorMessage: _mapError(error));
+
+      return false;
+    }
   }
 
   String _mapError(Object error) {

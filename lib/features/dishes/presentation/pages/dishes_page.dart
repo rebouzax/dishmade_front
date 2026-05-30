@@ -1,4 +1,5 @@
 import 'package:dishmade_front/features/categories/domain/entities/dish_category.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -6,6 +7,8 @@ import 'package:go_router/go_router.dart';
 import '../../../../app/router/app_routes.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../categories/presentation/viewmodels/categories_provider.dart';
+import '../../domain/entities/dish.dart';
+import '../viewmodels/dish_image_provider.dart';
 import '../viewmodels/dishes_viewmodel.dart';
 import '../widgets/dish_card.dart';
 
@@ -23,6 +26,113 @@ class _DishesPageState extends ConsumerState<DishesPage> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickAndUploadImage(Dish dish) async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['jpg', 'jpeg', 'png', 'webp'],
+      withData: true,
+    );
+
+    if (result == null || result.files.isEmpty) {
+      return;
+    }
+
+    final file = result.files.single;
+    final bytes = file.bytes;
+
+    if (bytes == null || bytes.isEmpty) {
+      _showMessage('Não foi possível ler o arquivo selecionado.');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      _showMessage('A imagem deve ter no máximo 5MB.');
+      return;
+    }
+
+    final contentType = _contentTypeFromFileName(file.name);
+
+    if (contentType == null) {
+      _showMessage('Formato inválido. Use JPEG, PNG ou WEBP.');
+      return;
+    }
+
+    final success = await ref
+        .read(dishesViewModelProvider.notifier)
+        .uploadDishImage(
+          dishId: dish.id,
+          bytes: bytes,
+          fileName: file.name,
+          contentType: contentType,
+        );
+
+    if (!mounted || !success) return;
+
+    ref.invalidate(dishImageBytesProvider(dish.id));
+
+    _showMessage('Imagem atualizada com sucesso.');
+  }
+
+  Future<void> _confirmDeleteImage(Dish dish) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Remover imagem'),
+          content: Text('Deseja remover a imagem do prato "${dish.name}"?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancelar'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Remover'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed != true) return;
+
+    final success = await ref
+        .read(dishesViewModelProvider.notifier)
+        .deleteDishImage(dish.id);
+
+    if (!mounted || !success) return;
+
+    ref.invalidate(dishImageBytesProvider(dish.id));
+
+    _showMessage('Imagem removida com sucesso.');
+  }
+
+  String? _contentTypeFromFileName(String fileName) {
+    final lowerName = fileName.toLowerCase();
+
+    if (lowerName.endsWith('.jpg') || lowerName.endsWith('.jpeg')) {
+      return 'image/jpeg';
+    }
+
+    if (lowerName.endsWith('.png')) {
+      return 'image/png';
+    }
+
+    if (lowerName.endsWith('.webp')) {
+      return 'image/webp';
+    }
+
+    return null;
+  }
+
+  void _showMessage(String message) {
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -146,6 +256,12 @@ class _DishesPageState extends ConsumerState<DishesPage> {
                               if (result == true) {
                                 await viewModel.refresh();
                               }
+                            },
+                            onUploadImage: () {
+                              _pickAndUploadImage(state.dishes[index]);
+                            },
+                            onDeleteImage: () {
+                              _confirmDeleteImage(state.dishes[index]);
                             },
                           );
                         }, childCount: state.dishes.length),
