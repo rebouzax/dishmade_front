@@ -148,98 +148,13 @@ class _CategoriesPageState extends ConsumerState<CategoriesPage> {
   }
 
   Future<void> _openCreateCategoryDialog() async {
-    final nameController = TextEditingController();
-    final descriptionController = TextEditingController();
-    final formKey = GlobalKey<FormState>();
-
     final result = await showDialog<_CategoryFormResult>(
       context: context,
+      barrierDismissible: false,
       builder: (dialogContext) {
-        return AlertDialog(
-          title: const Text('Nova categoria'),
-          content: SizedBox(
-            width: 520,
-            child: Form(
-              key: formKey,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextFormField(
-                    controller: nameController,
-                    autofocus: true,
-                    textInputAction: TextInputAction.next,
-                    maxLength: 100,
-                    decoration: const InputDecoration(
-                      labelText: 'Nome',
-                      hintText: 'Ex: Hambúrgueres',
-                      prefixIcon: Icon(Icons.category_rounded),
-                    ),
-                    validator: (value) {
-                      final text = value?.trim() ?? '';
-
-                      if (text.isEmpty) {
-                        return 'Informe o nome da categoria.';
-                      }
-
-                      if (text.length > 100) {
-                        return 'O nome deve ter no máximo 100 caracteres.';
-                      }
-
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 12),
-                  TextFormField(
-                    controller: descriptionController,
-                    maxLength: 500,
-                    maxLines: 3,
-                    maxLengthEnforcement: MaxLengthEnforcement.enforced,
-                    decoration: const InputDecoration(
-                      labelText: 'Descrição',
-                      hintText: 'Ex: Categoria de hambúrgueres artesanais',
-                      prefixIcon: Icon(Icons.description_outlined),
-                    ),
-                    validator: (value) {
-                      final text = value?.trim() ?? '';
-
-                      if (text.length > 500) {
-                        return 'A descrição deve ter no máximo 500 caracteres.';
-                      }
-
-                      return null;
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('Cancelar'),
-            ),
-            FilledButton(
-              onPressed: () {
-                final isValid = formKey.currentState?.validate() ?? false;
-
-                if (!isValid) return;
-
-                Navigator.of(dialogContext).pop(
-                  _CategoryFormResult(
-                    name: nameController.text.trim(),
-                    description: descriptionController.text.trim(),
-                  ),
-                );
-              },
-              child: const Text('Criar'),
-            ),
-          ],
-        );
+        return const _CreateCategoryDialog();
       },
     );
-
-    nameController.dispose();
-    descriptionController.dispose();
 
     if (result == null) return;
 
@@ -260,6 +175,181 @@ class _CategoryFormResult {
   final String? description;
 
   const _CategoryFormResult({required this.name, this.description});
+}
+
+class _CreateCategoryDialog extends StatefulWidget {
+  const _CreateCategoryDialog();
+
+  @override
+  State<_CreateCategoryDialog> createState() => _CreateCategoryDialogState();
+}
+
+class _CreateCategoryDialogState extends State<_CreateCategoryDialog> {
+  final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
+  final _descriptionController = TextEditingController();
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _descriptionController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final screenSize = MediaQuery.sizeOf(context);
+
+    final dialogWidth = (screenSize.width - 32).clamp(320.0, 520.0).toDouble();
+    final dialogHeight = (screenSize.height - 48)
+        .clamp(360.0, 520.0)
+        .toDouble();
+
+    return Dialog(
+      insetPadding: const EdgeInsets.all(16),
+      clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      child: SizedBox(
+        width: dialogWidth,
+        height: dialogHeight,
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(22, 20, 22, 12),
+              child: Row(
+                children: [
+                  Container(
+                    width: 46,
+                    height: 46,
+                    decoration: BoxDecoration(
+                      color: AppColors.warning.withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: const Icon(
+                      Icons.category_rounded,
+                      color: AppColors.warning,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Text(
+                      'Nova categoria',
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    tooltip: 'Fechar',
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: const Icon(Icons.close_rounded),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(height: 1),
+            Flexible(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(22, 18, 22, 18),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+                      TextFormField(
+                        controller: _nameController,
+                        autofocus: true,
+                        textInputAction: TextInputAction.next,
+                        maxLength: 100,
+                        decoration: const InputDecoration(
+                          labelText: 'Nome',
+                          hintText: 'Ex: Hambúrgueres',
+                          prefixIcon: Icon(Icons.category_rounded),
+                        ),
+                        validator: (value) {
+                          final text = value?.trim() ?? '';
+
+                          if (text.isEmpty) {
+                            return 'Informe o nome da categoria.';
+                          }
+
+                          if (text.length > 100) {
+                            return 'O nome deve ter no máximo 100 caracteres.';
+                          }
+
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        controller: _descriptionController,
+                        maxLength: 500,
+                        maxLines: 4,
+                        maxLengthEnforcement: MaxLengthEnforcement.enforced,
+                        decoration: const InputDecoration(
+                          labelText: 'Descrição',
+                          hintText: 'Ex: Categoria de hambúrgueres artesanais',
+                          prefixIcon: Icon(Icons.description_outlined),
+                        ),
+                        validator: (value) {
+                          final text = value?.trim() ?? '';
+
+                          if (text.length > 500) {
+                            return 'A descrição deve ter no máximo 500 caracteres.';
+                          }
+
+                          return null;
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            const Divider(height: 1),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(22, 14, 22, 18),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: const Text('Cancelar'),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: FilledButton.icon(
+                      onPressed: _submit,
+                      icon: const Icon(Icons.add_rounded),
+                      label: const Text('Criar'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _submit() {
+    final isValid = _formKey.currentState?.validate() ?? false;
+
+    if (!isValid) return;
+
+    Navigator.of(context).pop(
+      _CategoryFormResult(
+        name: _nameController.text.trim(),
+        description: _descriptionController.text.trim().isEmpty
+            ? null
+            : _descriptionController.text.trim(),
+      ),
+    );
+  }
 }
 
 class _Header extends StatelessWidget {
