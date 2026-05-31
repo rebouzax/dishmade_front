@@ -12,6 +12,7 @@ import '../../features/dishes/presentation/pages/dishes_page.dart';
 import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/kitchen/presentation/pages/kitchen_page.dart';
 import '../../features/orders/presentation/pages/orders_page.dart';
+import '../../features/public_menu/presentation/pages/public_menu_page.dart';
 import '../../features/sales_history/presentation/pages/sales_history_page.dart';
 import '../../features/tables/presentation/pages/tables_page.dart';
 import 'app_routes.dart';
@@ -22,7 +23,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: AppRoutes.login,
     redirect: (context, state) {
-      final location = state.matchedLocation;
+      final location = state.uri.path;
+
+      final isPublicRoute = location.startsWith('/menu/');
+
+      if (isPublicRoute) {
+        return null;
+      }
 
       if (authState.isLoading) {
         return null;
@@ -60,6 +67,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.login,
         builder: (context, state) => const LoginPage(),
+      ),
+      GoRoute(
+        path: AppRoutes.publicMenu,
+        builder: (context, state) {
+          final slug = state.pathParameters['slug'] ?? '';
+          return PublicMenuPage(slug: slug);
+        },
       ),
       GoRoute(
         path: AppRoutes.home,

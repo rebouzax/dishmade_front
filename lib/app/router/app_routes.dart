@@ -19,4 +19,8 @@ abstract final class AppRoutes {
   static const kitchen = '/kitchen';
 
   static const salesHistory = '/sales-history';
+
+  static const publicMenu = '/menu/:slug';
+
+  static String publicMenuBySlug(String slug) => '/menu/$slug';
 }

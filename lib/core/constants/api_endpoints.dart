@@ -22,4 +22,26 @@ abstract final class ApiEndpoints {
   static String updateOrderStatus(String orderId) =>
       '/api/orders/$orderId/status';
   static String cancelOrder(String orderId) => '/api/orders/$orderId/cancel';
+
+  static const publicPrefix = '/api/public';
+
+  static String publicMenu(String slug) => '/api/public/restaurants/$slug/menu';
+
+  static String publicCategories(String slug) =>
+      '/api/public/restaurants/$slug/categories';
+
+  static String publicDishes(String slug) =>
+      '/api/public/restaurants/$slug/dishes';
+
+  static String publicDishImage(String dishId) =>
+      '/api/public/dishes/$dishId/image';
+
+  static String publicQrCode(String slug) =>
+      '/api/public/restaurants/$slug/qr-code';
+
+  static const publicOrders = '/api/public/orders';
+
+  static String publicOrderById(String id) => '/api/public/orders/$id';
+
+  static String publicOrderItems(String id) => '/api/public/orders/$id/items';
 }
