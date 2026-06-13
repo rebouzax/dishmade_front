@@ -1,7 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'dart:typed_data';
+
 import '../../../../core/pagination/paginated_response.dart';
 import '../../domain/entities/restaurant_table.dart';
+import '../../domain/entities/table_menu_qr_code.dart';
 import '../../domain/repositories/table_repository.dart';
 import '../datasources/table_remote_datasource.dart';
 import '../dtos/create_table_request.dart';
@@ -68,5 +71,27 @@ class TableRepositoryImpl implements TableRepository {
   @override
   Future<void> deleteTable({required String id}) {
     return _remoteDataSource.deleteTable(id: id);
+  }
+
+  @override
+  Future<TableMenuQrCode> enableMenuQrCode({required String id}) async {
+    final response = await _remoteDataSource.enableMenuQrCode(id: id);
+    return response.toEntity();
+  }
+
+  @override
+  Future<void> disableMenuQrCode({required String id}) {
+    return _remoteDataSource.disableMenuQrCode(id: id);
+  }
+
+  @override
+  Future<TableMenuQrCode> getMenuQrCode({required String id}) async {
+    final response = await _remoteDataSource.getMenuQrCode(id: id);
+    return response.toEntity();
+  }
+
+  @override
+  Future<Uint8List> getMenuQrCodeImage({required String id}) {
+    return _remoteDataSource.getMenuQrCodeImage(id: id);
   }
 }

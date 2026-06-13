@@ -4,6 +4,8 @@ class RestaurantTableDto {
   final String id;
   final int number;
   final bool isOccupied;
+  final bool isMenuQrCodeEnabled;
+  final DateTime? menuQrCodeEnabledAt;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -11,6 +13,8 @@ class RestaurantTableDto {
     required this.id,
     required this.number,
     required this.isOccupied,
+    required this.isMenuQrCodeEnabled,
+    required this.menuQrCodeEnabledAt,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -20,6 +24,10 @@ class RestaurantTableDto {
       id: json['id']?.toString() ?? '',
       number: json['number'] as int? ?? 0,
       isOccupied: json['isOccupied'] as bool? ?? false,
+      isMenuQrCodeEnabled: json['isMenuQrCodeEnabled'] as bool? ?? false,
+      menuQrCodeEnabledAt: DateTime.tryParse(
+        json['menuQrCodeEnabledAt']?.toString() ?? '',
+      ),
       createdAt: DateTime.tryParse(json['createdAt']?.toString() ?? ''),
       updatedAt: DateTime.tryParse(json['updatedAt']?.toString() ?? ''),
     );
@@ -30,6 +38,8 @@ class RestaurantTableDto {
       id: id,
       number: number,
       isOccupied: isOccupied,
+      isMenuQrCodeEnabled: isMenuQrCodeEnabled,
+      menuQrCodeEnabledAt: menuQrCodeEnabledAt,
       createdAt: createdAt,
       updatedAt: updatedAt,
     );

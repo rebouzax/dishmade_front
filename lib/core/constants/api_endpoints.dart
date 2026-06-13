@@ -44,4 +44,15 @@ abstract final class ApiEndpoints {
   static String publicOrderById(String id) => '/api/public/orders/$id';
 
   static String publicOrderItems(String id) => '/api/public/orders/$id/items';
+
+  static String enableTableMenuQrCode(String id) =>
+      '/api/tables/$id/menu-qr-code/enable';
+
+  static String disableTableMenuQrCode(String id) =>
+      '/api/tables/$id/menu-qr-code/disable';
+
+  static String tableMenuQrCode(String id) => '/api/tables/$id/menu-qr-code';
+
+  static String tableMenuQrCodeImage(String id) =>
+      '/api/tables/$id/menu-qr-code/image';
 }

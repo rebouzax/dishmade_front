@@ -8,6 +8,8 @@ import '../../../../core/pagination/paginated_response.dart';
 import '../dtos/create_table_request.dart';
 import '../dtos/restaurant_table_dto.dart';
 import '../dtos/update_table_request.dart';
+import 'dart:typed_data';
+import '../dtos/table_menu_qr_code_dto.dart';
 
 final tableRemoteDataSourceProvider = Provider<TableRemoteDataSource>((ref) {
   final dio = ref.watch(dioProvider);
@@ -34,6 +36,14 @@ abstract interface class TableRemoteDataSource {
   Future<void> releaseTable({required String id});
 
   Future<void> deleteTable({required String id});
+
+  Future<TableMenuQrCodeDto> enableMenuQrCode({required String id});
+
+  Future<void> disableMenuQrCode({required String id});
+
+  Future<TableMenuQrCodeDto> getMenuQrCode({required String id});
+
+  Future<Uint8List> getMenuQrCodeImage({required String id});
 }
 
 class TableRemoteDataSourceImpl implements TableRemoteDataSource {
@@ -116,6 +126,55 @@ class TableRemoteDataSourceImpl implements TableRemoteDataSource {
   Future<void> deleteTable({required String id}) async {
     try {
       await _dio.delete<void>(ApiEndpoints.tableById(id));
+    } on DioException catch (exception) {
+      throw ApiException.fromDioException(exception);
+    }
+  }
+
+  @override
+  Future<TableMenuQrCodeDto> enableMenuQrCode({required String id}) async {
+    try {
+      final response = await _dio.patch<Map<String, dynamic>>(
+        ApiEndpoints.enableTableMenuQrCode(id),
+      );
+
+      return TableMenuQrCodeDto.fromJson(response.data ?? <String, dynamic>{});
+    } on DioException catch (exception) {
+      throw ApiException.fromDioException(exception);
+    }
+  }
+
+  @override
+  Future<void> disableMenuQrCode({required String id}) async {
+    try {
+      await _dio.patch<void>(ApiEndpoints.disableTableMenuQrCode(id));
+    } on DioException catch (exception) {
+      throw ApiException.fromDioException(exception);
+    }
+  }
+
+  @override
+  Future<TableMenuQrCodeDto> getMenuQrCode({required String id}) async {
+    try {
+      final response = await _dio.get<Map<String, dynamic>>(
+        ApiEndpoints.tableMenuQrCode(id),
+      );
+
+      return TableMenuQrCodeDto.fromJson(response.data ?? <String, dynamic>{});
+    } on DioException catch (exception) {
+      throw ApiException.fromDioException(exception);
+    }
+  }
+
+  @override
+  Future<Uint8List> getMenuQrCodeImage({required String id}) async {
+    try {
+      final response = await _dio.get<List<int>>(
+        ApiEndpoints.tableMenuQrCodeImage(id),
+        options: Options(responseType: ResponseType.bytes),
+      );
+
+      return Uint8List.fromList(response.data ?? const <int>[]);
     } on DioException catch (exception) {
       throw ApiException.fromDioException(exception);
     }

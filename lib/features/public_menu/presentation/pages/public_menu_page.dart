@@ -13,8 +13,13 @@ import '../widgets/public_order_details_sheet.dart';
 
 class PublicMenuPage extends ConsumerStatefulWidget {
   final String slug;
+  final int? initialTableNumber;
 
-  const PublicMenuPage({super.key, required this.slug});
+  const PublicMenuPage({
+    super.key,
+    required this.slug,
+    this.initialTableNumber,
+  });
 
   @override
   ConsumerState<PublicMenuPage> createState() => _PublicMenuPageState();
@@ -150,7 +155,7 @@ class _PublicMenuPageState extends ConsumerState<PublicMenuPage> {
     final currentOrder = ref.read(publicOrderViewModelProvider).order;
 
     if (currentOrder == null) {
-      final tableNumber = await _askTableNumber();
+      final tableNumber = widget.initialTableNumber ?? await _askTableNumber();
 
       if (tableNumber == null) return;
 

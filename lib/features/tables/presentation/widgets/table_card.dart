@@ -8,6 +8,10 @@ class TableCard extends StatelessWidget {
   final VoidCallback onEdit;
   final VoidCallback onToggleOccupation;
   final VoidCallback onDelete;
+  final VoidCallback onEnableQrCode;
+  final VoidCallback onDisableQrCode;
+  final VoidCallback onViewQrCode;
+  final VoidCallback onCopyQrCodeLink;
 
   const TableCard({
     super.key,
@@ -15,6 +19,10 @@ class TableCard extends StatelessWidget {
     required this.onEdit,
     required this.onToggleOccupation,
     required this.onDelete,
+    required this.onEnableQrCode,
+    required this.onDisableQrCode,
+    required this.onViewQrCode,
+    required this.onCopyQrCodeLink,
   });
 
   @override
@@ -45,9 +53,13 @@ class TableCard extends StatelessWidget {
                     if (value == 'edit') onEdit();
                     if (value == 'toggle') onToggleOccupation();
                     if (value == 'delete') onDelete();
+                    if (value == 'enableQr') onEnableQrCode();
+                    if (value == 'disableQr') onDisableQrCode();
+                    if (value == 'viewQr') onViewQrCode();
+                    if (value == 'copyQr') onCopyQrCodeLink();
                   },
                   itemBuilder: (context) {
-                    return [
+                    final items = <PopupMenuEntry<String>>[
                       const PopupMenuItem(
                         value: 'edit',
                         child: Text('Editar número'),
@@ -58,11 +70,40 @@ class TableCard extends StatelessWidget {
                           isOccupied ? 'Liberar mesa' : 'Ocupar mesa',
                         ),
                       ),
+                    ];
+
+                    if (!table.isMenuQrCodeEnabled) {
+                      items.add(
+                        const PopupMenuItem(
+                          value: 'enableQr',
+                          child: Text('Habilitar QR Code'),
+                        ),
+                      );
+                    } else {
+                      items.addAll([
+                        const PopupMenuItem(
+                          value: 'viewQr',
+                          child: Text('Visualizar QR Code'),
+                        ),
+                        const PopupMenuItem(
+                          value: 'copyQr',
+                          child: Text('Copiar link do cardápio'),
+                        ),
+                        const PopupMenuItem(
+                          value: 'disableQr',
+                          child: Text('Desabilitar QR Code'),
+                        ),
+                      ]);
+                    }
+
+                    items.add(
                       const PopupMenuItem(
                         value: 'delete',
                         child: Text('Remover mesa'),
                       ),
-                    ];
+                    );
+
+                    return items;
                   },
                 ),
               ],
@@ -77,6 +118,8 @@ class TableCard extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             _StatusBadge(isOccupied: isOccupied),
+            const SizedBox(height: 8),
+            _QrCodeBadge(isEnabled: table.isMenuQrCodeEnabled),
           ],
         ),
       ),
@@ -101,6 +144,33 @@ class _StatusBadge extends StatelessWidget {
       ),
       child: Text(
         isOccupied ? 'Ocupada' : 'Livre',
+        style: TextStyle(
+          color: color,
+          fontWeight: FontWeight.w800,
+          fontSize: 12,
+        ),
+      ),
+    );
+  }
+}
+
+class _QrCodeBadge extends StatelessWidget {
+  final bool isEnabled;
+
+  const _QrCodeBadge({required this.isEnabled});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = isEnabled ? AppColors.primary : AppColors.textSecondary;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.10),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        isEnabled ? 'QR ativo' : 'QR inativo',
         style: TextStyle(
           color: color,
           fontWeight: FontWeight.w800,

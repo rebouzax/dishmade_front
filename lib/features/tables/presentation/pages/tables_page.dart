@@ -6,7 +6,9 @@ import 'package:go_router/go_router.dart';
 import '../../../../app/router/app_routes.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../domain/entities/restaurant_table.dart';
+import '../../domain/entities/table_menu_qr_code.dart';
 import '../viewmodels/tables_viewmodel.dart';
+import '../viewmodels/table_menu_qr_code_image_provider.dart';
 import '../widgets/table_card.dart';
 
 class TablesPage extends ConsumerStatefulWidget {
@@ -115,6 +117,10 @@ class _TablesPageState extends ConsumerState<TablesPage> {
                               }
                             },
                             onDelete: () => _confirmDelete(context, table),
+                            onEnableQrCode: () => _enableQrCode(table),
+                            onDisableQrCode: () => _disableQrCode(table),
+                            onViewQrCode: () => _viewQrCode(table),
+                            onCopyQrCodeLink: () => _copyQrCodeLink(table),
                           );
                         }, childCount: state.tables.length),
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -259,6 +265,168 @@ class _TablesPageState extends ConsumerState<TablesPage> {
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(const SnackBar(content: Text('Mesa removida com sucesso.')));
+  }
+
+  Future _enableQrCode(RestaurantTable table) async {
+    final qrCode = await ref
+        .read(tablesViewModelProvider.notifier)
+        .enableMenuQrCode(table.id);
+
+    if (!mounted || qrCode == null) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('QR Code habilitado com sucesso.')),
+    );
+
+    await _showQrCodeDialog(qrCode);
+  }
+
+  Future _disableQrCode(RestaurantTable table) async {
+    final confirmed = await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Desabilitar QR Code'),
+          content: Text(
+            'Deseja desabilitar o QR Code da Mesa ${table.number}?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancelar'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Desabilitar'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed != true) return;
+
+    final success = await ref
+        .read(tablesViewModelProvider.notifier)
+        .disableMenuQrCode(table.id);
+
+    if (!mounted || !success) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('QR Code desabilitado com sucesso.')),
+    );
+  }
+
+  Future _viewQrCode(RestaurantTable table) async {
+    final qrCode = await ref
+        .read(tablesViewModelProvider.notifier)
+        .getMenuQrCode(table.id);
+
+    if (!mounted || qrCode == null) return;
+
+    await _showQrCodeDialog(qrCode);
+  }
+
+  Future _copyQrCodeLink(RestaurantTable table) async {
+    final qrCode = await ref
+        .read(tablesViewModelProvider.notifier)
+        .getMenuQrCode(table.id);
+
+    if (!mounted || qrCode == null || qrCode.menuUrl == null) return;
+
+    await Clipboard.setData(ClipboardData(text: qrCode.menuUrl!));
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Link copiado para a área de transferência.'),
+      ),
+    );
+  }
+
+  Future _showQrCodeDialog(TableMenuQrCode qrCode) async {
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return Consumer(
+          builder: (context, ref, _) {
+            final imageAsync = ref.watch(
+              tableMenuQrCodeImageProvider(qrCode.tableId),
+            );
+
+            return AlertDialog(
+              title: Text('QR Code - Mesa ${qrCode.tableNumber}'),
+              content: SizedBox(
+                width: 360,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    imageAsync.when(
+                      data: (bytes) {
+                        return Image.memory(
+                          bytes,
+                          width: 240,
+                          height: 240,
+                          fit: BoxFit.contain,
+                        );
+                      },
+                      loading: () {
+                        return const SizedBox(
+                          width: 240,
+                          height: 240,
+                          child: Center(child: CircularProgressIndicator()),
+                        );
+                      },
+                      error: (_, __) {
+                        return const SizedBox(
+                          width: 240,
+                          height: 240,
+                          child: Center(
+                            child: Text(
+                              'Não foi possível carregar o QR Code.',
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    if (qrCode.menuUrl != null)
+                      SelectableText(
+                        qrCode.menuUrl!,
+                        textAlign: TextAlign.center,
+                      ),
+                  ],
+                ),
+              ),
+              actions: [
+                if (qrCode.menuUrl != null)
+                  TextButton.icon(
+                    onPressed: () async {
+                      await Clipboard.setData(
+                        ClipboardData(text: qrCode.menuUrl!),
+                      );
+
+                      if (!context.mounted) return;
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Link copiado.')),
+                      );
+                    },
+                    icon: const Icon(Icons.copy_rounded),
+                    label: const Text('Copiar link'),
+                  ),
+                FilledButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Fechar'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
   }
 }
 

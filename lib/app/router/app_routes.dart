@@ -23,4 +23,14 @@ abstract final class AppRoutes {
   static const publicMenu = '/menu/:slug';
 
   static String publicMenuBySlug(String slug) => '/menu/$slug';
+  static String enableTableMenuQrCode(String id) =>
+      '/api/tables/$id/menu-qr-code/enable';
+
+  static String disableTableMenuQrCode(String id) =>
+      '/api/tables/$id/menu-qr-code/disable';
+
+  static String tableMenuQrCode(String id) => '/api/tables/$id/menu-qr-code';
+
+  static String tableMenuQrCodeImage(String id) =>
+      '/api/tables/$id/menu-qr-code/image';
 }

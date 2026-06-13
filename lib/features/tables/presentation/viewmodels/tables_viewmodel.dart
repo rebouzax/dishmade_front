@@ -1,3 +1,6 @@
+import 'package:dishmade_front/features/tables/domain/usecases/disable_table_menu_qr_code_usecase.dart';
+import 'package:dishmade_front/features/tables/domain/usecases/enable_table_menu_qr_code_usecase.dart';
+import 'package:dishmade_front/features/tables/domain/usecases/get_table_menu_qr_code_usecase.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/errors/app_exception.dart';
@@ -40,6 +43,21 @@ final deleteTableUseCaseProvider = Provider<DeleteTableUseCase>((ref) {
   return DeleteTableUseCase(repository);
 });
 
+final enableTableMenuQrCodeUseCaseProvider = Provider((ref) {
+  final repository = ref.watch(tableRepositoryProvider);
+  return EnableTableMenuQrCodeUseCase(repository);
+});
+
+final disableTableMenuQrCodeUseCaseProvider = Provider((ref) {
+  final repository = ref.watch(tableRepositoryProvider);
+  return DisableTableMenuQrCodeUseCase(repository);
+});
+
+final getTableMenuQrCodeUseCaseProvider = Provider((ref) {
+  final repository = ref.watch(tableRepositoryProvider);
+  return GetTableMenuQrCodeUseCase(repository);
+});
+
 final tablesViewModelProvider =
     NotifierProvider.autoDispose<TablesViewModel, TablesState>(
       TablesViewModel.new,
@@ -52,6 +70,9 @@ class TablesViewModel extends Notifier<TablesState> {
   late final OccupyTableUseCase _occupyTableUseCase;
   late final ReleaseTableUseCase _releaseTableUseCase;
   late final DeleteTableUseCase _deleteTableUseCase;
+  late final EnableTableMenuQrCodeUseCase _enableTableMenuQrCodeUseCase;
+  late final DisableTableMenuQrCodeUseCase _disableTableMenuQrCodeUseCase;
+  late final GetTableMenuQrCodeUseCase _getTableMenuQrCodeUseCase;
 
   @override
   TablesState build() {
@@ -61,6 +82,13 @@ class TablesViewModel extends Notifier<TablesState> {
     _occupyTableUseCase = ref.watch(occupyTableUseCaseProvider);
     _releaseTableUseCase = ref.watch(releaseTableUseCaseProvider);
     _deleteTableUseCase = ref.watch(deleteTableUseCaseProvider);
+    _enableTableMenuQrCodeUseCase = ref.watch(
+      enableTableMenuQrCodeUseCaseProvider,
+    );
+    _disableTableMenuQrCodeUseCase = ref.watch(
+      disableTableMenuQrCodeUseCaseProvider,
+    );
+    _getTableMenuQrCodeUseCase = ref.watch(getTableMenuQrCodeUseCaseProvider);
 
     Future.microtask(loadInitial);
 
@@ -217,6 +245,67 @@ class TablesViewModel extends Notifier<TablesState> {
 
       state = state.copyWith(isSaving: false, errorMessage: _mapError(error));
       return false;
+    }
+  }
+
+  Future enableMenuQrCode(String tableId) async {
+    state = state.copyWith(isSaving: true, errorMessage: null);
+
+    try {
+      final qrCode = await _enableTableMenuQrCodeUseCase(id: tableId);
+
+      if (!ref.mounted) return null;
+
+      state = state.copyWith(isSaving: false);
+      await loadInitial();
+
+      return qrCode;
+    } catch (error) {
+      if (!ref.mounted) return null;
+
+      state = state.copyWith(isSaving: false, errorMessage: _mapError(error));
+
+      return null;
+    }
+  }
+
+  Future disableMenuQrCode(String tableId) async {
+    state = state.copyWith(isSaving: true, errorMessage: null);
+
+    try {
+      await _disableTableMenuQrCodeUseCase(id: tableId);
+
+      if (!ref.mounted) return false;
+
+      state = state.copyWith(isSaving: false);
+      await loadInitial();
+
+      return true;
+    } catch (error) {
+      if (!ref.mounted) return false;
+
+      state = state.copyWith(isSaving: false, errorMessage: _mapError(error));
+
+      return false;
+    }
+  }
+
+  Future getMenuQrCode(String tableId) async {
+    state = state.copyWith(isSaving: true, errorMessage: null);
+
+    try {
+      final qrCode = await _getTableMenuQrCodeUseCase(id: tableId);
+
+      if (!ref.mounted) return null;
+
+      state = state.copyWith(isSaving: false);
+      return qrCode;
+    } catch (error) {
+      if (!ref.mounted) return null;
+
+      state = state.copyWith(isSaving: false, errorMessage: _mapError(error));
+
+      return null;
     }
   }
 

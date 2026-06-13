@@ -72,7 +72,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.publicMenu,
         builder: (context, state) {
           final slug = state.pathParameters['slug'] ?? '';
-          return PublicMenuPage(slug: slug);
+          final tableParam = state.uri.queryParameters['table'];
+          final tableNumber = int.tryParse(tableParam ?? '');
+
+          return PublicMenuPage(slug: slug, initialTableNumber: tableNumber);
         },
       ),
       GoRoute(

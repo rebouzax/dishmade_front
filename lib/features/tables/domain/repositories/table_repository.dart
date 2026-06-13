@@ -1,5 +1,8 @@
+import 'dart:typed_data';
+
 import '../../../../core/pagination/paginated_response.dart';
 import '../entities/restaurant_table.dart';
+import '../entities/table_menu_qr_code.dart';
 
 abstract interface class TableRepository {
   Future<PaginatedResponse<RestaurantTable>> getTables({
@@ -18,4 +21,12 @@ abstract interface class TableRepository {
   Future<void> releaseTable({required String id});
 
   Future<void> deleteTable({required String id});
+
+  Future<TableMenuQrCode> enableMenuQrCode({required String id});
+
+  Future<void> disableMenuQrCode({required String id});
+
+  Future<TableMenuQrCode> getMenuQrCode({required String id});
+
+  Future<Uint8List> getMenuQrCodeImage({required String id});
 }
