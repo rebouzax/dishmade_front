@@ -7,6 +7,7 @@ class PublicOrderItemDto {
   final int quantity;
   final double unitPrice;
   final double total;
+  final String? notes;
 
   const PublicOrderItemDto({
     required this.id,
@@ -15,6 +16,7 @@ class PublicOrderItemDto {
     required this.quantity,
     required this.unitPrice,
     required this.total,
+    required this.notes,
   });
 
   factory PublicOrderItemDto.fromJson(Map<String, dynamic> json) {
@@ -25,6 +27,7 @@ class PublicOrderItemDto {
       quantity: json['quantity'] as int? ?? 0,
       unitPrice: (json['unitPrice'] as num?)?.toDouble() ?? 0,
       total: (json['total'] as num?)?.toDouble() ?? 0,
+      notes: json['notes']?.toString(),
     );
   }
 
@@ -36,6 +39,7 @@ class PublicOrderItemDto {
       quantity: quantity,
       unitPrice: unitPrice,
       total: total,
+      notes: notes,
     );
   }
 }

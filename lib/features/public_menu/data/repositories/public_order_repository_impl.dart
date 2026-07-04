@@ -49,6 +49,7 @@ class PublicOrderRepositoryImpl implements PublicOrderRepository {
     required String accessCode,
     required String dishId,
     required int quantity,
+    String? notes,
   }) async {
     final response = await _remoteDataSource.addItem(
       orderId: orderId,
@@ -56,6 +57,7 @@ class PublicOrderRepositoryImpl implements PublicOrderRepository {
         accessCode: accessCode,
         dishId: dishId,
         quantity: quantity,
+        notes: notes,
       ),
     );
 

@@ -21,6 +21,7 @@ abstract interface class OrderRepository {
     required String orderId,
     required String dishId,
     required int quantity,
+    String? notes,
   });
 
   Future<void> updateStatus({

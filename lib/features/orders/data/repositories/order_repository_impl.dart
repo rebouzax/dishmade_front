@@ -64,10 +64,15 @@ class OrderRepositoryImpl implements OrderRepository {
     required String orderId,
     required String dishId,
     required int quantity,
+    String? notes,
   }) {
     return _remoteDataSource.addItem(
       orderId: orderId,
-      request: AddOrderItemRequest(dishId: dishId, quantity: quantity),
+      request: AddOrderItemRequest(
+        dishId: dishId,
+        quantity: quantity,
+        notes: notes,
+      ),
     );
   }
 

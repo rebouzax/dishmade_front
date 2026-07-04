@@ -233,8 +233,10 @@ class OrdersPage extends ConsumerWidget {
   ) async {
     ref.invalidate(availableDishesForOrderProvider);
 
+    final formKey = GlobalKey<FormState>();
     String? selectedDishId;
     final quantityController = TextEditingController(text: '1');
+    final notesController = TextEditingController();
 
     final result = await showDialog<_AddItemResult>(
       context: context,
@@ -257,43 +259,81 @@ class OrdersPage extends ConsumerWidget {
                           );
                         }
 
-                        return Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            DropdownButtonFormField<String>(
-                              value: selectedDishId,
-                              decoration: const InputDecoration(
-                                labelText: 'Prato',
-                                prefixIcon: Icon(Icons.restaurant_menu_rounded),
-                              ),
-                              items: dishes.map((dish) {
-                                return DropdownMenuItem<String>(
-                                  value: dish.id,
-                                  child: Text(
-                                    '${dish.name} - ${CurrencyFormatter.format(dish.price)}',
-                                    overflow: TextOverflow.ellipsis,
+                        return Form(
+                          key: formKey,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              DropdownButtonFormField<String>(
+                                value: selectedDishId,
+                                decoration: const InputDecoration(
+                                  labelText: 'Prato',
+                                  prefixIcon: Icon(
+                                    Icons.restaurant_menu_rounded,
                                   ),
-                                );
-                              }).toList(),
-                              onChanged: (value) {
-                                setState(() {
-                                  selectedDishId = value;
-                                });
-                              },
-                            ),
-                            const SizedBox(height: 16),
-                            TextField(
-                              controller: quantityController,
-                              keyboardType: TextInputType.number,
-                              inputFormatters: [
-                                FilteringTextInputFormatter.digitsOnly,
-                              ],
-                              decoration: const InputDecoration(
-                                labelText: 'Quantidade',
-                                prefixIcon: Icon(Icons.numbers_rounded),
+                                ),
+                                items: dishes.map((dish) {
+                                  return DropdownMenuItem<String>(
+                                    value: dish.id,
+                                    child: Text(
+                                      '${dish.name} - ${CurrencyFormatter.format(dish.price)}',
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  );
+                                }).toList(),
+                                onChanged: (value) {
+                                  setState(() {
+                                    selectedDishId = value;
+                                  });
+                                },
                               ),
-                            ),
-                          ],
+                              const SizedBox(height: 16),
+                              TextFormField(
+                                controller: quantityController,
+                                keyboardType: TextInputType.number,
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.digitsOnly,
+                                ],
+                                decoration: const InputDecoration(
+                                  labelText: 'Quantidade',
+                                  prefixIcon: Icon(Icons.numbers_rounded),
+                                ),
+                                validator: (value) {
+                                  final quantity = int.tryParse(
+                                    value?.trim() ?? '',
+                                  );
+
+                                  if (quantity == null || quantity <= 0) {
+                                    return 'Informe uma quantidade válida.';
+                                  }
+
+                                  return null;
+                                },
+                              ),
+                              const SizedBox(height: 14),
+                              TextFormField(
+                                controller: notesController,
+                                maxLength: 500,
+                                maxLines: 3,
+                                maxLengthEnforcement:
+                                    MaxLengthEnforcement.enforced,
+                                decoration: const InputDecoration(
+                                  labelText: 'Observação',
+                                  hintText: 'Ex: Sem cebola, pouco molho',
+                                  prefixIcon: Icon(Icons.notes_rounded),
+                                ),
+                                validator: (value) {
+                                  final text = value?.trim() ?? '';
+
+                                  if (text.length > 500) {
+                                    return 'A observação deve ter no máximo 500 caracteres.';
+                                  }
+
+                                  return null;
+                                },
+                              ),
+                            ],
+                          ),
                         );
                       },
                       loading: () {
@@ -318,6 +358,11 @@ class OrdersPage extends ConsumerWidget {
                       onPressed: selectedDishId == null
                           ? null
                           : () {
+                              if (!(formKey.currentState?.validate() ??
+                                  false)) {
+                                return;
+                              }
+
                               final quantity = int.tryParse(
                                 quantityController.text.trim(),
                               );
@@ -330,6 +375,9 @@ class OrdersPage extends ConsumerWidget {
                                 _AddItemResult(
                                   dishId: selectedDishId!,
                                   quantity: quantity,
+                                  notes: notesController.text.trim().isEmpty
+                                      ? null
+                                      : notesController.text.trim(),
                                 ),
                               );
                             },
@@ -345,6 +393,7 @@ class OrdersPage extends ConsumerWidget {
     );
 
     quantityController.dispose();
+    notesController.dispose();
 
     if (result == null) return;
 
@@ -354,6 +403,7 @@ class OrdersPage extends ConsumerWidget {
           orderId: order.id,
           dishId: result.dishId,
           quantity: result.quantity,
+          notes: result.notes,
         );
 
     if (!context.mounted || !success) return;
@@ -448,8 +498,13 @@ class OrdersPage extends ConsumerWidget {
 class _AddItemResult {
   final String dishId;
   final int quantity;
+  final String? notes;
 
-  const _AddItemResult({required this.dishId, required this.quantity});
+  const _AddItemResult({
+    required this.dishId,
+    required this.quantity,
+    this.notes,
+  });
 }
 
 class _Header extends StatelessWidget {

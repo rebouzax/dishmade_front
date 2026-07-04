@@ -12,6 +12,7 @@ abstract interface class PublicOrderRepository {
     required String accessCode,
     required String dishId,
     required int quantity,
+    String? notes,
   });
 
   Future<PublicOrder> getOrder({

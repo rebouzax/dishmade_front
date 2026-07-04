@@ -5,6 +5,7 @@ class PublicOrderItem {
   final int quantity;
   final double unitPrice;
   final double total;
+  final String? notes;
 
   const PublicOrderItem({
     required this.id,
@@ -13,5 +14,6 @@ class PublicOrderItem {
     required this.quantity,
     required this.unitPrice,
     required this.total,
+    required this.notes,
   });
 }

@@ -9,11 +9,13 @@ class AddOrderItemUseCase {
     required String orderId,
     required String dishId,
     required int quantity,
+    String? notes,
   }) {
     return _repository.addItem(
       orderId: orderId,
       dishId: dishId,
       quantity: quantity,
+      notes: notes,
     );
   }
 }

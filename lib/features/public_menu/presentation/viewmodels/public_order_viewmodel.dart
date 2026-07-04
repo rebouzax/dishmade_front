@@ -141,7 +141,11 @@ class PublicOrderViewModel extends Notifier<PublicOrderState> {
     }
   }
 
-  Future<bool> addItem({required String dishId, required int quantity}) async {
+  Future<bool> addItem({
+    required String dishId,
+    required int quantity,
+    String? notes,
+  }) async {
     final currentOrder = state.order;
 
     if (currentOrder == null) {
@@ -159,6 +163,7 @@ class PublicOrderViewModel extends Notifier<PublicOrderState> {
         accessCode: currentOrder.accessCode,
         dishId: dishId,
         quantity: quantity,
+        notes: notes,
       );
 
       if (!ref.mounted) return false;

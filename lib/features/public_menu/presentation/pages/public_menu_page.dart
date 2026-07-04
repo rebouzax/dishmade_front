@@ -10,6 +10,7 @@ import '../widgets/public_category_tabs.dart';
 import '../widgets/public_dish_card.dart';
 import '../widgets/public_order_bottom_bar.dart';
 import '../widgets/public_order_details_sheet.dart';
+import '../widgets/add_public_dish_dialog.dart';
 
 class PublicMenuPage extends ConsumerStatefulWidget {
   final String slug;
@@ -170,13 +171,20 @@ class _PublicMenuPageState extends ConsumerState<PublicMenuPage> {
       }
     }
 
-    final quantity = await _askQuantity(dish);
+    final result = await showDialog<AddPublicDishDialogResult>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return AddPublicDishDialog(dish: dish);
+      },
+    );
 
-    if (quantity == null) return;
+    if (result == null) return;
 
     final success = await orderViewModel.addItem(
       dishId: dish.id,
-      quantity: quantity,
+      quantity: result.quantity,
+      notes: result.notes,
     );
 
     if (!mounted || !success) {

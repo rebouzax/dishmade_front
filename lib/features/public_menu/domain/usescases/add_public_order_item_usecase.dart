@@ -11,12 +11,14 @@ class AddPublicOrderItemUseCase {
     required String accessCode,
     required String dishId,
     required int quantity,
+    String? notes,
   }) {
     return _repository.addItem(
       orderId: orderId,
       accessCode: accessCode,
       dishId: dishId,
       quantity: quantity,
+      notes: notes,
     );
   }
 }

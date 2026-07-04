@@ -5,6 +5,7 @@ class OrderItem {
   final int quantity;
   final double unitPrice;
   final double total;
+  final String? notes;
 
   const OrderItem({
     required this.id,
@@ -13,5 +14,6 @@ class OrderItem {
     required this.quantity,
     required this.unitPrice,
     required this.total,
+    required this.notes,
   });
 }

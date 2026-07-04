@@ -66,13 +66,32 @@ class OrderCard extends StatelessWidget {
               (item) => Padding(
                 padding: const EdgeInsets.symmetric(vertical: 6),
                 child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
-                      child: Text(
-                        '${item.quantity}x ${item.dishName}',
-                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '${item.quantity}x ${item.dishName}',
+                            style: const TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                          if (item.notes != null &&
+                              item.notes!.trim().isNotEmpty) ...[
+                            const SizedBox(height: 3),
+                            Text(
+                              item.notes!,
+                              style: const TextStyle(
+                                color: AppColors.textSecondary,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                     ),
+                    const SizedBox(width: 8),
                     Text(
                       CurrencyFormatter.format(item.total),
                       style: const TextStyle(fontWeight: FontWeight.w800),

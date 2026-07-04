@@ -171,6 +171,7 @@ class OrdersViewModel extends Notifier<OrdersState> {
     required String orderId,
     required String dishId,
     required int quantity,
+    String? notes,
   }) async {
     state = state.copyWith(isSaving: true, errorMessage: null);
 
@@ -179,6 +180,7 @@ class OrdersViewModel extends Notifier<OrdersState> {
         orderId: orderId,
         dishId: dishId,
         quantity: quantity,
+        notes: notes,
       );
 
       final updatedOrder = await _getOrderByIdUseCase(orderId);
