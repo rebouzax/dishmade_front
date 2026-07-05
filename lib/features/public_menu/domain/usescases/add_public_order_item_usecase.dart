@@ -12,6 +12,7 @@ class AddPublicOrderItemUseCase {
     required String dishId,
     required int quantity,
     String? notes,
+    List<String> optionIds = const [],
   }) {
     return _repository.addItem(
       orderId: orderId,
@@ -19,6 +20,7 @@ class AddPublicOrderItemUseCase {
       dishId: dishId,
       quantity: quantity,
       notes: notes,
+      optionIds: optionIds,
     );
   }
 }

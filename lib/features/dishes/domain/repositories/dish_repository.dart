@@ -2,6 +2,8 @@ import 'dart:typed_data';
 
 import '../../../../core/pagination/paginated_response.dart';
 import '../entities/dish.dart';
+import '../entities/dish_option.dart';
+import '../entities/dish_option_group.dart';
 
 abstract interface class DishRepository {
   Future<PaginatedResponse<Dish>> getDishes({
@@ -37,4 +39,21 @@ abstract interface class DishRepository {
   Future<Uint8List> getDishImageBytes({required String dishId});
 
   Future<void> deleteDishImage({required String dishId});
+
+  Future<List<DishOptionGroup>> getOptionGroups({required String dishId});
+
+  Future<DishOptionGroup> createOptionGroup({
+    required String dishId,
+    required String name,
+    required bool isRequired,
+    required int minSelection,
+    required int maxSelection,
+  });
+
+  Future<DishOption> createOption({
+    required String dishId,
+    required String optionGroupId,
+    required String name,
+    required double additionalPrice,
+  });
 }

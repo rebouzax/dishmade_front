@@ -50,6 +50,7 @@ class PublicOrderRepositoryImpl implements PublicOrderRepository {
     required String dishId,
     required int quantity,
     String? notes,
+    List<String> optionIds = const [],
   }) async {
     final response = await _remoteDataSource.addItem(
       orderId: orderId,
@@ -58,6 +59,7 @@ class PublicOrderRepositoryImpl implements PublicOrderRepository {
         dishId: dishId,
         quantity: quantity,
         notes: notes,
+        optionIds: optionIds,
       ),
     );
 

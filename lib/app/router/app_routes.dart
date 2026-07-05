@@ -33,4 +33,6 @@ abstract final class AppRoutes {
 
   static String tableMenuQrCodeImage(String id) =>
       '/api/tables/$id/menu-qr-code/image';
+
+  static const dishOptions = '/dishes/options';
 }

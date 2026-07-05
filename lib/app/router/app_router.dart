@@ -8,6 +8,7 @@ import '../../features/categories/presentation/pages/categories_page.dart';
 import '../../features/dashboard/presentation/pages/dashboard_page.dart';
 import '../../features/dishes/domain/entities/dish.dart';
 import '../../features/dishes/presentation/pages/dish_form_page.dart';
+import '../../features/dishes/presentation/pages/dish_options_page.dart';
 import '../../features/dishes/presentation/pages/dishes_page.dart';
 import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/kitchen/presentation/pages/kitchen_page.dart';
@@ -100,6 +101,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           final dish = state.extra is Dish ? state.extra as Dish : null;
 
           return DishFormPage(dish: dish);
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.dishOptions,
+        builder: (context, state) {
+          final dish = state.extra as Dish;
+          return DishOptionsPage(dish: dish);
         },
       ),
       GoRoute(

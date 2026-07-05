@@ -5,8 +5,12 @@ import '../../../../core/constants/api_endpoints.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/network/dio_provider.dart';
 import '../../../../core/pagination/paginated_response.dart';
+import '../dtos/create_dish_option_group_request.dart';
+import '../dtos/create_dish_option_request.dart';
 import '../dtos/create_dish_request.dart';
 import '../dtos/dish_dto.dart';
+import '../dtos/dish_option_dto.dart';
+import '../dtos/dish_option_group_dto.dart';
 import '../dtos/update_dish_request.dart';
 
 final dishRemoteDataSourceProvider = Provider<DishRemoteDataSource>((ref) {
@@ -40,6 +44,19 @@ abstract interface class DishRemoteDataSource {
   Future<Uint8List> getDishImageBytes({required String dishId});
 
   Future<void> deleteDishImage({required String dishId});
+
+  Future<List<DishOptionGroupDto>> getOptionGroups({required String dishId});
+
+  Future<DishOptionGroupDto> createOptionGroup({
+    required String dishId,
+    required CreateDishOptionGroupRequest request,
+  });
+
+  Future<DishOptionDto> createOption({
+    required String dishId,
+    required String optionGroupId,
+    required CreateDishOptionRequest request,
+  });
 }
 
 class DishRemoteDataSourceImpl implements DishRemoteDataSource {
@@ -148,6 +165,63 @@ class DishRemoteDataSourceImpl implements DishRemoteDataSource {
   Future<void> deleteDishImage({required String dishId}) async {
     try {
       await _dio.delete<void>(ApiEndpoints.dishImage(dishId));
+    } on DioException catch (exception) {
+      throw ApiException.fromDioException(exception);
+    }
+  }
+
+  @override
+  Future<List<DishOptionGroupDto>> getOptionGroups({
+    required String dishId,
+  }) async {
+    try {
+      final response = await _dio.get<List<dynamic>>(
+        ApiEndpoints.dishOptionGroups(dishId),
+      );
+      final data = response.data ?? const [];
+
+      return data
+          .whereType<Map<String, dynamic>>()
+          .map(DishOptionGroupDto.fromJson)
+          .toList();
+    } on DioException catch (exception) {
+      throw ApiException.fromDioException(exception);
+    }
+  }
+
+  @override
+  Future<DishOptionGroupDto> createOptionGroup({
+    required String dishId,
+    required CreateDishOptionGroupRequest request,
+  }) async {
+    try {
+      final response = await _dio.post<Map<String, dynamic>>(
+        ApiEndpoints.dishOptionGroups(dishId),
+        data: request.toJson(),
+      );
+
+      return DishOptionGroupDto.fromJson(response.data ?? <String, dynamic>{});
+    } on DioException catch (exception) {
+      throw ApiException.fromDioException(exception);
+    }
+  }
+
+  @override
+  Future<DishOptionDto> createOption({
+    required String dishId,
+    required String optionGroupId,
+    required CreateDishOptionRequest request,
+  }) async {
+    try {
+      final response = await _dio.post<Map<String, dynamic>>(
+        ApiEndpoints.dishOptionGroupOptions(
+          dishId: dishId,
+          optionGroupId: optionGroupId,
+        ),
+        data: request.toJson(),
+      );
+
+      return DishOptionDto.fromJson(response.data ?? <String, dynamic>{});
     } on DioException catch (exception) {
       throw ApiException.fromDioException(exception);
     }

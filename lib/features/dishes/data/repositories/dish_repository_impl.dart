@@ -2,8 +2,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:typed_data';
 import '../../../../core/pagination/paginated_response.dart';
 import '../../domain/entities/dish.dart';
+import '../../domain/entities/dish_option.dart';
+import '../../domain/entities/dish_option_group.dart';
 import '../../domain/repositories/dish_repository.dart';
 import '../datasources/dish_remote_datasource.dart';
+import '../dtos/create_dish_option_group_request.dart';
+import '../dtos/create_dish_option_request.dart';
 import '../dtos/create_dish_request.dart';
 import '../dtos/update_dish_request.dart';
 
@@ -103,5 +107,53 @@ class DishRepositoryImpl implements DishRepository {
   @override
   Future<void> deleteDishImage({required String dishId}) {
     return _remoteDataSource.deleteDishImage(dishId: dishId);
+  }
+
+  @override
+  Future<List<DishOptionGroup>> getOptionGroups({
+    required String dishId,
+  }) async {
+    final response = await _remoteDataSource.getOptionGroups(dishId: dishId);
+    return response.map((group) => group.toEntity()).toList();
+  }
+
+  @override
+  Future<DishOptionGroup> createOptionGroup({
+    required String dishId,
+    required String name,
+    required bool isRequired,
+    required int minSelection,
+    required int maxSelection,
+  }) async {
+    final response = await _remoteDataSource.createOptionGroup(
+      dishId: dishId,
+      request: CreateDishOptionGroupRequest(
+        name: name,
+        isRequired: isRequired,
+        minSelection: minSelection,
+        maxSelection: maxSelection,
+      ),
+    );
+
+    return response.toEntity();
+  }
+
+  @override
+  Future<DishOption> createOption({
+    required String dishId,
+    required String optionGroupId,
+    required String name,
+    required double additionalPrice,
+  }) async {
+    final response = await _remoteDataSource.createOption(
+      dishId: dishId,
+      optionGroupId: optionGroupId,
+      request: CreateDishOptionRequest(
+        name: name,
+        additionalPrice: additionalPrice,
+      ),
+    );
+
+    return response.toEntity();
   }
 }

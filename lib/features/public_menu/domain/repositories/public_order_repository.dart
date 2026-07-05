@@ -13,6 +13,7 @@ abstract interface class PublicOrderRepository {
     required String dishId,
     required int quantity,
     String? notes,
+    List<String> optionIds = const [],
   });
 
   Future<PublicOrder> getOrder({

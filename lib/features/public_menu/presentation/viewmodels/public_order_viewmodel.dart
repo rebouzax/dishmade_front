@@ -145,6 +145,7 @@ class PublicOrderViewModel extends Notifier<PublicOrderState> {
     required String dishId,
     required int quantity,
     String? notes,
+    List<String> optionIds = const [],
   }) async {
     final currentOrder = state.order;
 
@@ -164,6 +165,7 @@ class PublicOrderViewModel extends Notifier<PublicOrderState> {
         dishId: dishId,
         quantity: quantity,
         notes: notes,
+        optionIds: optionIds,
       );
 
       if (!ref.mounted) return false;

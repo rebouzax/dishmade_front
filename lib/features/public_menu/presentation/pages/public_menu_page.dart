@@ -185,6 +185,7 @@ class _PublicMenuPageState extends ConsumerState<PublicMenuPage> {
       dishId: dish.id,
       quantity: result.quantity,
       notes: result.notes,
+      optionIds: result.optionIds,
     );
 
     if (!mounted || !success) {

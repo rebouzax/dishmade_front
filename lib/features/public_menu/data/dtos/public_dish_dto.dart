@@ -1,4 +1,5 @@
 import '../../domain/entities/public_dish.dart';
+import 'public_dish_option_group_dto.dart';
 
 class PublicDishDto {
   final String id;
@@ -8,6 +9,7 @@ class PublicDishDto {
   final String categoryId;
   final String categoryName;
   final String? imageUrl;
+  final List<PublicDishOptionGroupDto> optionGroups;
 
   const PublicDishDto({
     required this.id,
@@ -17,9 +19,12 @@ class PublicDishDto {
     required this.categoryId,
     required this.categoryName,
     required this.imageUrl,
+    required this.optionGroups,
   });
 
   factory PublicDishDto.fromJson(Map<String, dynamic> json) {
+    final rawOptionGroups = json['optionGroups'];
+
     return PublicDishDto(
       id: json['id']?.toString() ?? '',
       name: json['name']?.toString() ?? '',
@@ -28,6 +33,12 @@ class PublicDishDto {
       categoryId: json['categoryId']?.toString() ?? '',
       categoryName: json['categoryName']?.toString() ?? '',
       imageUrl: json['imageUrl']?.toString(),
+      optionGroups: rawOptionGroups is List
+          ? rawOptionGroups
+                .whereType<Map<String, dynamic>>()
+                .map(PublicDishOptionGroupDto.fromJson)
+                .toList()
+          : const [],
     );
   }
 
@@ -40,6 +51,7 @@ class PublicDishDto {
       categoryId: categoryId,
       categoryName: categoryName,
       imageUrl: imageUrl,
+      optionGroups: optionGroups.map((group) => group.toEntity()).toList(),
     );
   }
 }

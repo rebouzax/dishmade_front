@@ -55,4 +55,11 @@ abstract final class ApiEndpoints {
 
   static String tableMenuQrCodeImage(String id) =>
       '/api/tables/$id/menu-qr-code/image';
+  static String dishOptionGroups(String dishId) =>
+      '/api/dishes/$dishId/option-groups';
+
+  static String dishOptionGroupOptions({
+    required String dishId,
+    required String optionGroupId,
+  }) => '/api/dishes/$dishId/option-groups/$optionGroupId/options';
 }

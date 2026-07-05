@@ -263,6 +263,12 @@ class _DishesPageState extends ConsumerState<DishesPage> {
                             onDeleteImage: () {
                               _confirmDeleteImage(state.dishes[index]);
                             },
+                            onManageOptions: () {
+                              context.push(
+                                AppRoutes.dishOptions,
+                                extra: state.dishes[index],
+                              );
+                            },
                           );
                         }, childCount: state.dishes.length),
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(

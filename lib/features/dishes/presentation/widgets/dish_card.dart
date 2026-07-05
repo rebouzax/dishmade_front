@@ -11,6 +11,7 @@ class DishCard extends ConsumerWidget {
   final VoidCallback? onTap;
   final VoidCallback? onUploadImage;
   final VoidCallback? onDeleteImage;
+  final VoidCallback? onManageOptions;
 
   const DishCard({
     super.key,
@@ -18,6 +19,7 @@ class DishCard extends ConsumerWidget {
     this.onTap,
     this.onUploadImage,
     this.onDeleteImage,
+    this.onManageOptions,
   });
 
   @override
@@ -81,6 +83,10 @@ class DishCard extends ConsumerWidget {
                         if (value == 'delete') {
                           onDeleteImage?.call();
                         }
+
+                        if (value == 'options') {
+                          onManageOptions?.call();
+                        }
                       },
                       itemBuilder: (context) {
                         return const [
@@ -91,6 +97,10 @@ class DishCard extends ConsumerWidget {
                           PopupMenuItem(
                             value: 'delete',
                             child: Text('Remover imagem'),
+                          ),
+                          PopupMenuItem(
+                            value: 'options',
+                            child: Text('Gerenciar adicionais'),
                           ),
                         ];
                       },
