@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-
+import '../../features/service_requests/presentation/pages/service_requests_page.dart';
 import '../../features/admin_clients/presentation/pages/admin_clients_page.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/viewmodels/auth_controller.dart';
@@ -129,6 +129,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.salesHistory,
         builder: (context, state) => const SalesHistoryPage(),
+      ),
+      GoRoute(
+        path: AppRoutes.serviceRequests,
+        builder: (context, state) => const ServiceRequestsPage(),
       ),
     ],
   );

@@ -11,6 +11,7 @@ import '../widgets/public_dish_card.dart';
 import '../widgets/public_order_bottom_bar.dart';
 import '../widgets/public_order_details_sheet.dart';
 import '../widgets/add_public_dish_dialog.dart';
+import '../../../../features/service_requests/presentation/widgets/service_request_dialog.dart';
 
 class PublicMenuPage extends ConsumerStatefulWidget {
   final String slug;
@@ -47,6 +48,17 @@ class _PublicMenuPageState extends ConsumerState<PublicMenuPage> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
+      appBar: AppBar(
+        backgroundColor: AppColors.background,
+        elevation: 0,
+        actions: [
+          IconButton(
+            tooltip: 'Solicitar atendimento',
+            onPressed: () => _openServiceRequest(),
+            icon: const Icon(Icons.support_agent_rounded),
+          ),
+        ],
+      ),
       bottomNavigationBar: orderState.order == null
           ? null
           : PublicOrderBottomBar(
@@ -303,6 +315,23 @@ class _PublicMenuPageState extends ConsumerState<PublicMenuPage> {
           onRefresh: () {
             ref.read(publicOrderViewModelProvider.notifier).refreshOrder();
           },
+        );
+      },
+    );
+  }
+
+  Future<void> _openServiceRequest() async {
+    final tableNumber = widget.initialTableNumber ?? await _askTableNumber();
+
+    if (!mounted || tableNumber == null) return;
+
+    await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return ServiceRequestDialog(
+          restaurantSlug: widget.slug,
+          tableNumber: tableNumber,
         );
       },
     );

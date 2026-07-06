@@ -70,6 +70,13 @@ class HomePage extends ConsumerWidget {
         color: AppColors.success,
         route: AppRoutes.salesHistory,
       ),
+      _HomeModule(
+        title: 'Solicitações',
+        description: 'Chamados de garçom, conta e ajuda enviados pelo QR Code.',
+        icon: Icons.room_service_rounded,
+        color: AppColors.success,
+        route: AppRoutes.serviceRequests,
+      ),
     ];
 
     return Scaffold(

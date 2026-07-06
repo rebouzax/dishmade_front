@@ -35,4 +35,5 @@ abstract final class AppRoutes {
       '/api/tables/$id/menu-qr-code/image';
 
   static const dishOptions = '/dishes/options';
+  static const serviceRequests = '/service-requests';
 }

@@ -45,6 +45,17 @@ abstract final class ApiEndpoints {
 
   static String publicOrderItems(String id) => '/api/public/orders/$id/items';
 
+  static const serviceRequests = '/api/service-requests';
+  static const publicServiceRequests = '/api/public/service-requests';
+
+  static String serviceRequestById(String id) => '/api/service-requests/$id';
+  static String startServiceRequest(String id) =>
+      '/api/service-requests/$id/start';
+  static String resolveServiceRequest(String id) =>
+      '/api/service-requests/$id/resolve';
+  static String cancelServiceRequest(String id) =>
+      '/api/service-requests/$id/cancel';
+
   static String enableTableMenuQrCode(String id) =>
       '/api/tables/$id/menu-qr-code/enable';
 
