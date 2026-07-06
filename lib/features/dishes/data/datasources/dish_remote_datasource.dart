@@ -11,6 +11,8 @@ import '../dtos/create_dish_request.dart';
 import '../dtos/dish_dto.dart';
 import '../dtos/dish_option_dto.dart';
 import '../dtos/dish_option_group_dto.dart';
+import '../dtos/update_dish_option_group_request.dart';
+import '../dtos/update_dish_option_request.dart';
 import '../dtos/update_dish_request.dart';
 
 final dishRemoteDataSourceProvider = Provider<DishRemoteDataSource>((ref) {
@@ -56,6 +58,37 @@ abstract interface class DishRemoteDataSource {
     required String dishId,
     required String optionGroupId,
     required CreateDishOptionRequest request,
+  });
+
+  Future<DishOptionGroupDto> updateOptionGroup({
+    required String dishId,
+    required String groupId,
+    required UpdateDishOptionGroupRequest request,
+  });
+
+  Future<void> deleteOptionGroup({
+    required String dishId,
+    required String groupId,
+  });
+
+  Future<DishOptionDto> updateOption({
+    required String dishId,
+    required String groupId,
+    required String optionId,
+    required UpdateDishOptionRequest request,
+  });
+
+  Future<DishOptionDto> setOptionAvailability({
+    required String dishId,
+    required String groupId,
+    required String optionId,
+    required bool isAvailable,
+  });
+
+  Future<void> deleteOption({
+    required String dishId,
+    required String groupId,
+    required String optionId,
   });
 }
 
@@ -222,6 +255,107 @@ class DishRemoteDataSourceImpl implements DishRemoteDataSource {
       );
 
       return DishOptionDto.fromJson(response.data ?? <String, dynamic>{});
+    } on DioException catch (exception) {
+      throw ApiException.fromDioException(exception);
+    }
+  }
+
+  @override
+  Future<DishOptionGroupDto> updateOptionGroup({
+    required String dishId,
+    required String groupId,
+    required UpdateDishOptionGroupRequest request,
+  }) async {
+    try {
+      final response = await _dio.put<Map<String, dynamic>>(
+        ApiEndpoints.dishOptionGroupById(dishId: dishId, groupId: groupId),
+        data: request.toJson(),
+      );
+
+      return DishOptionGroupDto.fromJson(response.data ?? <String, dynamic>{});
+    } on DioException catch (exception) {
+      throw ApiException.fromDioException(exception);
+    }
+  }
+
+  @override
+  Future<void> deleteOptionGroup({
+    required String dishId,
+    required String groupId,
+  }) async {
+    try {
+      await _dio.delete<void>(
+        ApiEndpoints.dishOptionGroupById(dishId: dishId, groupId: groupId),
+      );
+    } on DioException catch (exception) {
+      throw ApiException.fromDioException(exception);
+    }
+  }
+
+  @override
+  Future<DishOptionDto> updateOption({
+    required String dishId,
+    required String groupId,
+    required String optionId,
+    required UpdateDishOptionRequest request,
+  }) async {
+    try {
+      final response = await _dio.put<Map<String, dynamic>>(
+        ApiEndpoints.dishOptionById(
+          dishId: dishId,
+          groupId: groupId,
+          optionId: optionId,
+        ),
+        data: request.toJson(),
+      );
+
+      return DishOptionDto.fromJson(response.data ?? <String, dynamic>{});
+    } on DioException catch (exception) {
+      throw ApiException.fromDioException(exception);
+    }
+  }
+
+  @override
+  Future<DishOptionDto> setOptionAvailability({
+    required String dishId,
+    required String groupId,
+    required String optionId,
+    required bool isAvailable,
+  }) async {
+    try {
+      final endpoint = isAvailable
+          ? ApiEndpoints.dishOptionAvailable(
+              dishId: dishId,
+              groupId: groupId,
+              optionId: optionId,
+            )
+          : ApiEndpoints.dishOptionUnavailable(
+              dishId: dishId,
+              groupId: groupId,
+              optionId: optionId,
+            );
+      final response = await _dio.patch<Map<String, dynamic>>(endpoint);
+
+      return DishOptionDto.fromJson(response.data ?? <String, dynamic>{});
+    } on DioException catch (exception) {
+      throw ApiException.fromDioException(exception);
+    }
+  }
+
+  @override
+  Future<void> deleteOption({
+    required String dishId,
+    required String groupId,
+    required String optionId,
+  }) async {
+    try {
+      await _dio.delete<void>(
+        ApiEndpoints.dishOptionById(
+          dishId: dishId,
+          groupId: groupId,
+          optionId: optionId,
+        ),
+      );
     } on DioException catch (exception) {
       throw ApiException.fromDioException(exception);
     }

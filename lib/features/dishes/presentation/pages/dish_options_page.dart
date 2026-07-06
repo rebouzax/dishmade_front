@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../domain/entities/dish.dart';
+import '../../domain/entities/dish_option.dart';
 import '../../domain/entities/dish_option_group.dart';
 import '../viewmodels/dish_options_viewmodel.dart';
 
@@ -90,6 +91,15 @@ class _DishOptionsPageState extends ConsumerState<DishOptionsPage> {
                         child: _OptionGroupCard(
                           group: group,
                           onCreateOption: () => _openCreateOptionDialog(group),
+                          onEditGroup: () => _openEditGroupDialog(group),
+                          onDeleteGroup: () => _confirmDeleteGroup(group),
+                          onEditOption: (option) =>
+                              _openEditOptionDialog(group, option),
+                          onToggleOptionAvailability: (option) {
+                            _toggleOptionAvailability(group, option);
+                          },
+                          onDeleteOption: (option) =>
+                              _confirmDeleteOption(group, option),
                         ),
                       );
                     }, childCount: state.groups.length),
@@ -152,6 +162,167 @@ class _DishOptionsPageState extends ConsumerState<DishOptionsPage> {
       context,
     ).showSnackBar(const SnackBar(content: Text('Opção criada com sucesso.')));
   }
+
+  Future<void> _openEditGroupDialog(DishOptionGroup group) async {
+    final result = await showDialog<_CreateGroupResult>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => _CreateGroupDialog(group: group),
+    );
+
+    if (result == null) return;
+
+    final success = await ref
+        .read(dishOptionsViewModelProvider.notifier)
+        .updateGroup(
+          dishId: widget.dish.id,
+          groupId: group.id,
+          name: result.name,
+          isRequired: result.isRequired,
+          minSelection: result.minSelection,
+          maxSelection: result.maxSelection,
+        );
+
+    if (!mounted || !success) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Grupo atualizado com sucesso.')),
+    );
+  }
+
+  Future<void> _confirmDeleteGroup(DishOptionGroup group) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Excluir grupo'),
+          content: Text(
+            'Deseja excluir o grupo "${group.name}"? '
+            'As opções desse grupo também serão removidas do cardápio público.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancelar'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Excluir'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed != true) return;
+
+    final success = await ref
+        .read(dishOptionsViewModelProvider.notifier)
+        .deleteGroup(dishId: widget.dish.id, groupId: group.id);
+
+    if (!mounted || !success) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Grupo excluído com sucesso.')),
+    );
+  }
+
+  Future<void> _openEditOptionDialog(
+    DishOptionGroup group,
+    DishOption option,
+  ) async {
+    final result = await showDialog<_CreateOptionResult>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) =>
+          _CreateOptionDialog(groupName: group.name, option: option),
+    );
+
+    if (result == null) return;
+
+    final success = await ref
+        .read(dishOptionsViewModelProvider.notifier)
+        .updateOption(
+          dishId: widget.dish.id,
+          groupId: group.id,
+          optionId: option.id,
+          name: result.name,
+          additionalPrice: result.additionalPrice,
+        );
+
+    if (!mounted || !success) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Opção atualizada com sucesso.')),
+    );
+  }
+
+  Future<void> _toggleOptionAvailability(
+    DishOptionGroup group,
+    DishOption option,
+  ) async {
+    final success = await ref
+        .read(dishOptionsViewModelProvider.notifier)
+        .setOptionAvailability(
+          dishId: widget.dish.id,
+          groupId: group.id,
+          optionId: option.id,
+          isAvailable: !option.isAvailable,
+        );
+
+    if (!mounted || !success) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          option.isAvailable
+              ? 'Opção marcada como indisponível.'
+              : 'Opção marcada como disponível.',
+        ),
+      ),
+    );
+  }
+
+  Future<void> _confirmDeleteOption(
+    DishOptionGroup group,
+    DishOption option,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Excluir opção'),
+          content: Text('Deseja excluir a opção "${option.name}"?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancelar'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Excluir'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed != true) return;
+
+    final success = await ref
+        .read(dishOptionsViewModelProvider.notifier)
+        .deleteOption(
+          dishId: widget.dish.id,
+          groupId: group.id,
+          optionId: option.id,
+        );
+
+    if (!mounted || !success) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Opção excluída com sucesso.')),
+    );
+  }
 }
 
 class _Header extends StatelessWidget {
@@ -206,8 +377,21 @@ class _Header extends StatelessWidget {
 class _OptionGroupCard extends StatelessWidget {
   final DishOptionGroup group;
   final VoidCallback onCreateOption;
+  final VoidCallback onEditGroup;
+  final VoidCallback onDeleteGroup;
+  final ValueChanged<DishOption> onEditOption;
+  final ValueChanged<DishOption> onToggleOptionAvailability;
+  final ValueChanged<DishOption> onDeleteOption;
 
-  const _OptionGroupCard({required this.group, required this.onCreateOption});
+  const _OptionGroupCard({
+    required this.group,
+    required this.onCreateOption,
+    required this.onEditGroup,
+    required this.onDeleteGroup,
+    required this.onEditOption,
+    required this.onToggleOptionAvailability,
+    required this.onDeleteOption,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -217,11 +401,30 @@ class _OptionGroupCard extends StatelessWidget {
       child: ExpansionTile(
         tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-        title: Text(
-          group.name,
-          style: theme.textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w900,
-          ),
+        title: Row(
+          children: [
+            Expanded(
+              child: Text(
+                group.name,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ),
+            PopupMenuButton<String>(
+              tooltip: 'Ações do grupo',
+              onSelected: (value) {
+                if (value == 'edit') onEditGroup();
+                if (value == 'delete') onDeleteGroup();
+              },
+              itemBuilder: (context) {
+                return const [
+                  PopupMenuItem(value: 'edit', child: Text('Editar grupo')),
+                  PopupMenuItem(value: 'delete', child: Text('Excluir grupo')),
+                ];
+              },
+            ),
+          ],
         ),
         subtitle: Text(
           '${group.isRequired ? 'Obrigatório' : 'Opcional'} • '
@@ -240,10 +443,25 @@ class _OptionGroupCard extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 6),
                 child: Row(
                   children: [
+                    Icon(
+                      option.isAvailable
+                          ? Icons.check_circle_rounded
+                          : Icons.block_rounded,
+                      color: option.isAvailable
+                          ? AppColors.success
+                          : AppColors.textSecondary,
+                      size: 18,
+                    ),
+                    const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         option.name,
-                        style: const TextStyle(fontWeight: FontWeight.w700),
+                        style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          color: option.isAvailable
+                              ? AppColors.textPrimary
+                              : AppColors.textSecondary,
+                        ),
                       ),
                     ),
                     Text(
@@ -252,6 +470,36 @@ class _OptionGroupCard extends StatelessWidget {
                         fontWeight: FontWeight.w900,
                         color: AppColors.primaryDark,
                       ),
+                    ),
+                    PopupMenuButton<String>(
+                      tooltip: 'Ações da opção',
+                      onSelected: (value) {
+                        if (value == 'edit') onEditOption(option);
+                        if (value == 'availability') {
+                          onToggleOptionAvailability(option);
+                        }
+                        if (value == 'delete') onDeleteOption(option);
+                      },
+                      itemBuilder: (context) {
+                        return [
+                          const PopupMenuItem(
+                            value: 'edit',
+                            child: Text('Editar opção'),
+                          ),
+                          PopupMenuItem(
+                            value: 'availability',
+                            child: Text(
+                              option.isAvailable
+                                  ? 'Marcar indisponível'
+                                  : 'Marcar disponível',
+                            ),
+                          ),
+                          const PopupMenuItem(
+                            value: 'delete',
+                            child: Text('Excluir opção'),
+                          ),
+                        ];
+                      },
                     ),
                   ],
                 ),
@@ -320,7 +568,9 @@ class _CreateGroupResult {
 }
 
 class _CreateGroupDialog extends StatefulWidget {
-  const _CreateGroupDialog();
+  final DishOptionGroup? group;
+
+  const _CreateGroupDialog({this.group});
 
   @override
   State<_CreateGroupDialog> createState() => _CreateGroupDialogState();
@@ -334,6 +584,18 @@ class _CreateGroupDialogState extends State<_CreateGroupDialog> {
   bool _isRequired = false;
 
   @override
+  void initState() {
+    super.initState();
+    final group = widget.group;
+    if (group != null) {
+      _nameController.text = group.name;
+      _minController.text = group.minSelection.toString();
+      _maxController.text = group.maxSelection.toString();
+      _isRequired = group.isRequired;
+    }
+  }
+
+  @override
   void dispose() {
     _nameController.dispose();
     _minController.dispose();
@@ -344,7 +606,9 @@ class _CreateGroupDialogState extends State<_CreateGroupDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Novo grupo de opções'),
+      title: Text(
+        widget.group == null ? 'Novo grupo de opções' : 'Editar grupo',
+      ),
       content: SizedBox(
         width: 520,
         child: Form(
@@ -418,7 +682,10 @@ class _CreateGroupDialogState extends State<_CreateGroupDialog> {
           onPressed: () => Navigator.of(context).pop(),
           child: const Text('Cancelar'),
         ),
-        FilledButton(onPressed: _submit, child: const Text('Criar grupo')),
+        FilledButton(
+          onPressed: _submit,
+          child: Text(widget.group == null ? 'Criar grupo' : 'Salvar'),
+        ),
       ],
     );
   }
@@ -489,8 +756,9 @@ class _CreateOptionResult {
 
 class _CreateOptionDialog extends StatefulWidget {
   final String groupName;
+  final DishOption? option;
 
-  const _CreateOptionDialog({required this.groupName});
+  const _CreateOptionDialog({required this.groupName, this.option});
 
   @override
   State<_CreateOptionDialog> createState() => _CreateOptionDialogState();
@@ -502,6 +770,16 @@ class _CreateOptionDialogState extends State<_CreateOptionDialog> {
   final _priceController = TextEditingController(text: '0');
 
   @override
+  void initState() {
+    super.initState();
+    final option = widget.option;
+    if (option != null) {
+      _nameController.text = option.name;
+      _priceController.text = option.additionalPrice.toStringAsFixed(2);
+    }
+  }
+
+  @override
   void dispose() {
     _nameController.dispose();
     _priceController.dispose();
@@ -511,7 +789,11 @@ class _CreateOptionDialogState extends State<_CreateOptionDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('Nova opção - ${widget.groupName}'),
+      title: Text(
+        widget.option == null
+            ? 'Nova opção - ${widget.groupName}'
+            : 'Editar opção - ${widget.groupName}',
+      ),
       content: SizedBox(
         width: 520,
         child: Form(
@@ -566,7 +848,10 @@ class _CreateOptionDialogState extends State<_CreateOptionDialog> {
           onPressed: () => Navigator.of(context).pop(),
           child: const Text('Cancelar'),
         ),
-        FilledButton(onPressed: _submit, child: const Text('Criar opção')),
+        FilledButton(
+          onPressed: _submit,
+          child: Text(widget.option == null ? 'Criar opção' : 'Salvar'),
+        ),
       ],
     );
   }

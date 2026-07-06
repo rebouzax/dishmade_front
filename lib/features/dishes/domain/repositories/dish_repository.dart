@@ -56,4 +56,39 @@ abstract interface class DishRepository {
     required String name,
     required double additionalPrice,
   });
+
+  Future<DishOptionGroup> updateOptionGroup({
+    required String dishId,
+    required String groupId,
+    required String name,
+    required bool isRequired,
+    required int minSelection,
+    required int maxSelection,
+  });
+
+  Future<void> deleteOptionGroup({
+    required String dishId,
+    required String groupId,
+  });
+
+  Future<DishOption> updateOption({
+    required String dishId,
+    required String groupId,
+    required String optionId,
+    required String name,
+    required double additionalPrice,
+  });
+
+  Future<DishOption> setOptionAvailability({
+    required String dishId,
+    required String groupId,
+    required String optionId,
+    required bool isAvailable,
+  });
+
+  Future<void> deleteOption({
+    required String dishId,
+    required String groupId,
+    required String optionId,
+  });
 }

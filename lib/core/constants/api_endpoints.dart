@@ -62,4 +62,29 @@ abstract final class ApiEndpoints {
     required String dishId,
     required String optionGroupId,
   }) => '/api/dishes/$dishId/option-groups/$optionGroupId/options';
+
+  static String dishOptionGroupById({
+    required String dishId,
+    required String groupId,
+  }) => '/api/dishes/$dishId/option-groups/$groupId';
+
+  static String dishOptionById({
+    required String dishId,
+    required String groupId,
+    required String optionId,
+  }) => '/api/dishes/$dishId/option-groups/$groupId/options/$optionId';
+
+  static String dishOptionAvailable({
+    required String dishId,
+    required String groupId,
+    required String optionId,
+  }) =>
+      '/api/dishes/$dishId/option-groups/$groupId/options/$optionId/available';
+
+  static String dishOptionUnavailable({
+    required String dishId,
+    required String groupId,
+    required String optionId,
+  }) =>
+      '/api/dishes/$dishId/option-groups/$groupId/options/$optionId/unavailable';
 }

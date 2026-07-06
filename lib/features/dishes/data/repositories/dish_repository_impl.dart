@@ -9,6 +9,8 @@ import '../datasources/dish_remote_datasource.dart';
 import '../dtos/create_dish_option_group_request.dart';
 import '../dtos/create_dish_option_request.dart';
 import '../dtos/create_dish_request.dart';
+import '../dtos/update_dish_option_group_request.dart';
+import '../dtos/update_dish_option_request.dart';
 import '../dtos/update_dish_request.dart';
 
 final dishRepositoryProvider = Provider<DishRepository>((ref) {
@@ -155,5 +157,90 @@ class DishRepositoryImpl implements DishRepository {
     );
 
     return response.toEntity();
+  }
+
+  @override
+  Future<DishOptionGroup> updateOptionGroup({
+    required String dishId,
+    required String groupId,
+    required String name,
+    required bool isRequired,
+    required int minSelection,
+    required int maxSelection,
+  }) async {
+    final response = await _remoteDataSource.updateOptionGroup(
+      dishId: dishId,
+      groupId: groupId,
+      request: UpdateDishOptionGroupRequest(
+        name: name,
+        isRequired: isRequired,
+        minSelection: minSelection,
+        maxSelection: maxSelection,
+      ),
+    );
+
+    return response.toEntity();
+  }
+
+  @override
+  Future<void> deleteOptionGroup({
+    required String dishId,
+    required String groupId,
+  }) {
+    return _remoteDataSource.deleteOptionGroup(
+      dishId: dishId,
+      groupId: groupId,
+    );
+  }
+
+  @override
+  Future<DishOption> updateOption({
+    required String dishId,
+    required String groupId,
+    required String optionId,
+    required String name,
+    required double additionalPrice,
+  }) async {
+    final response = await _remoteDataSource.updateOption(
+      dishId: dishId,
+      groupId: groupId,
+      optionId: optionId,
+      request: UpdateDishOptionRequest(
+        name: name,
+        additionalPrice: additionalPrice,
+      ),
+    );
+
+    return response.toEntity();
+  }
+
+  @override
+  Future<DishOption> setOptionAvailability({
+    required String dishId,
+    required String groupId,
+    required String optionId,
+    required bool isAvailable,
+  }) async {
+    final response = await _remoteDataSource.setOptionAvailability(
+      dishId: dishId,
+      groupId: groupId,
+      optionId: optionId,
+      isAvailable: isAvailable,
+    );
+
+    return response.toEntity();
+  }
+
+  @override
+  Future<void> deleteOption({
+    required String dishId,
+    required String groupId,
+    required String optionId,
+  }) {
+    return _remoteDataSource.deleteOption(
+      dishId: dishId,
+      groupId: groupId,
+      optionId: optionId,
+    );
   }
 }
