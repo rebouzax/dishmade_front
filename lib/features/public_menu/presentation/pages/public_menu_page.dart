@@ -34,7 +34,12 @@ class _PublicMenuPageState extends ConsumerState<PublicMenuPage> {
 
     Future.microtask(() {
       ref.read(publicMenuViewModelProvider.notifier).loadMenu(widget.slug);
-      ref.read(publicOrderViewModelProvider.notifier).restoreOrder(widget.slug);
+      ref
+          .read(publicOrderViewModelProvider.notifier)
+          .restoreOrder(
+            slug: widget.slug,
+            tableNumber: widget.initialTableNumber,
+          );
     });
   }
 

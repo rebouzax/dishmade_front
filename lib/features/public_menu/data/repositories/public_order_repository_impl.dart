@@ -1,11 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../domain/entities/public_order.dart';
+import '../../domain/entities/public_order_open_session.dart';
 import '../../domain/entities/public_order_session.dart';
 import '../../domain/repositories/public_order_repository.dart';
 import '../datasources/public_order_remote_datasource.dart';
 import '../dtos/add_public_order_item_request.dart';
 import '../dtos/create_public_order_request.dart';
+import '../dtos/open_or_create_public_order_request.dart';
 import '../storage/public_order_storage.dart';
 
 final publicOrderRepositoryProvider = Provider<PublicOrderRepository>((ref) {
@@ -73,6 +75,38 @@ class PublicOrderRepositoryImpl implements PublicOrderRepository {
   }) async {
     final response = await _remoteDataSource.getOrder(
       orderId: orderId,
+      accessCode: accessCode,
+    );
+
+    return response.toEntity();
+  }
+
+  @override
+  Future<PublicOrderOpenSession> openOrCreate({
+    required String restaurantSlug,
+    required int tableNumber,
+    String? accessCode,
+  }) async {
+    final response = await _remoteDataSource.openOrCreate(
+      request: OpenOrCreatePublicOrderRequest(
+        restaurantSlug: restaurantSlug,
+        tableNumber: tableNumber,
+        accessCode: accessCode,
+      ),
+    );
+
+    return response.toEntity();
+  }
+
+  @override
+  Future<PublicOrder> getCurrentOrderByTable({
+    required String slug,
+    required int tableNumber,
+    required String accessCode,
+  }) async {
+    final response = await _remoteDataSource.getCurrentOrderByTable(
+      slug: slug,
+      tableNumber: tableNumber,
       accessCode: accessCode,
     );
 

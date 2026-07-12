@@ -1,10 +1,23 @@
 import '../entities/public_order.dart';
+import '../entities/public_order_open_session.dart';
 import '../entities/public_order_session.dart';
 
 abstract interface class PublicOrderRepository {
   Future<PublicOrder> createOrder({
     required String restaurantSlug,
     required int tableNumber,
+  });
+
+  Future<PublicOrderOpenSession> openOrCreate({
+    required String restaurantSlug,
+    required int tableNumber,
+    String? accessCode,
+  });
+
+  Future<PublicOrder> getCurrentOrderByTable({
+    required String slug,
+    required int tableNumber,
+    required String accessCode,
   });
 
   Future<PublicOrder> addItem({

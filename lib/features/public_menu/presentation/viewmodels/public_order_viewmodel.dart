@@ -1,7 +1,9 @@
 import 'package:dishmade_front/core/errors/app_exception.dart';
 import 'package:dishmade_front/features/public_menu/domain/usescases/add_public_order_item_usecase.dart';
 import 'package:dishmade_front/features/public_menu/domain/usescases/create_public_order_usecase.dart';
+import 'package:dishmade_front/features/public_menu/domain/usescases/get_current_public_order_by_table_usecase.dart';
 import 'package:dishmade_front/features/public_menu/domain/usescases/get_public_order_usecase.dart';
+import 'package:dishmade_front/features/public_menu/domain/usescases/open_or_create_public_order_usecase.dart';
 import 'package:dishmade_front/features/public_menu/domain/usescases/public_order_session_usecase.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -28,6 +30,18 @@ final getPublicOrderUseCaseProvider = Provider<GetPublicOrderUseCase>((ref) {
   return GetPublicOrderUseCase(repository);
 });
 
+final openOrCreatePublicOrderUseCaseProvider =
+    Provider<OpenOrCreatePublicOrderUseCase>((ref) {
+      final repository = ref.watch(publicOrderRepositoryProvider);
+      return OpenOrCreatePublicOrderUseCase(repository);
+    });
+
+final getCurrentPublicOrderByTableUseCaseProvider =
+    Provider<GetCurrentPublicOrderByTableUseCase>((ref) {
+      final repository = ref.watch(publicOrderRepositoryProvider);
+      return GetCurrentPublicOrderByTableUseCase(repository);
+    });
+
 final savePublicOrderSessionUseCaseProvider =
     Provider<SavePublicOrderSessionUseCase>((ref) {
       final repository = ref.watch(publicOrderRepositoryProvider);
@@ -53,6 +67,8 @@ final publicOrderViewModelProvider =
 
 class PublicOrderViewModel extends Notifier<PublicOrderState> {
   late final CreatePublicOrderUseCase _createOrderUseCase;
+  late final OpenOrCreatePublicOrderUseCase _openOrCreateOrderUseCase;
+  late final GetCurrentPublicOrderByTableUseCase _getCurrentOrderByTableUseCase;
   late final AddPublicOrderItemUseCase _addItemUseCase;
   late final GetPublicOrderUseCase _getOrderUseCase;
   late final SavePublicOrderSessionUseCase _saveSessionUseCase;
@@ -62,6 +78,12 @@ class PublicOrderViewModel extends Notifier<PublicOrderState> {
   @override
   PublicOrderState build() {
     _createOrderUseCase = ref.watch(createPublicOrderUseCaseProvider);
+    _openOrCreateOrderUseCase = ref.watch(
+      openOrCreatePublicOrderUseCaseProvider,
+    );
+    _getCurrentOrderByTableUseCase = ref.watch(
+      getCurrentPublicOrderByTableUseCaseProvider,
+    );
     _addItemUseCase = ref.watch(addPublicOrderItemUseCaseProvider);
     _getOrderUseCase = ref.watch(getPublicOrderUseCaseProvider);
     _saveSessionUseCase = ref.watch(savePublicOrderSessionUseCaseProvider);
@@ -71,30 +93,39 @@ class PublicOrderViewModel extends Notifier<PublicOrderState> {
     return const PublicOrderState();
   }
 
-  Future<void> restoreOrder(String slug) async {
+  Future<void> restoreOrder({
+    required String slug,
+    required int? tableNumber,
+  }) async {
+    if (tableNumber == null) return;
+
     state = state.copyWith(isLoading: true, errorMessage: null);
 
     try {
       final session = await _getSessionUseCase(slug);
 
-      if (session == null) {
+      if (session == null || session.accessCode.trim().isEmpty) {
         if (!ref.mounted) return;
         state = state.copyWith(isLoading: false);
         return;
       }
 
-      final order = await _getOrderUseCase(
-        orderId: session.orderId,
+      final order = await _getCurrentOrderByTableUseCase(
+        slug: slug,
+        tableNumber: tableNumber,
         accessCode: session.accessCode,
       );
 
       if (!ref.mounted) return;
 
-      if (order.isFinished) {
-        await _clearSessionUseCase(slug);
-        state = state.copyWith(order: null, isLoading: false);
-        return;
-      }
+      await _saveSessionUseCase(
+        PublicOrderSession(
+          restaurantSlug: slug,
+          orderId: order.orderId,
+          accessCode: order.accessCode,
+          tableNumber: order.tableNumber,
+        ),
+      );
 
       state = state.copyWith(order: order, isLoading: false);
     } catch (_) {
@@ -113,10 +144,15 @@ class PublicOrderViewModel extends Notifier<PublicOrderState> {
     state = state.copyWith(isSaving: true, errorMessage: null);
 
     try {
-      final order = await _createOrderUseCase(
+      final existingSession = await _getSessionUseCase(restaurantSlug);
+
+      final response = await _openOrCreateOrderUseCase(
         restaurantSlug: restaurantSlug,
         tableNumber: tableNumber,
+        accessCode: existingSession?.accessCode,
       );
+
+      final order = response.order;
 
       await _saveSessionUseCase(
         PublicOrderSession(

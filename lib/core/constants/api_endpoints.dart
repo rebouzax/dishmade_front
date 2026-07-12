@@ -41,6 +41,13 @@ abstract final class ApiEndpoints {
 
   static const publicOrders = '/api/public/orders';
 
+  static const publicOrdersOpenOrCreate = '/api/public/orders/open-or-create';
+
+  static String publicCurrentOrderByTable({
+    required String slug,
+    required int tableNumber,
+  }) => '/api/public/restaurants/$slug/tables/$tableNumber/current-order';
+
   static String publicOrderById(String id) => '/api/public/orders/$id';
 
   static String publicOrderItems(String id) => '/api/public/orders/$id/items';
