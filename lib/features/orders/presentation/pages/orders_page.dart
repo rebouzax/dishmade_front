@@ -112,6 +112,14 @@ class OrdersPage extends ConsumerWidget {
                         onCancel: order.status.canCancel
                             ? () => _confirmCancelOrder(context, ref, order)
                             : null,
+                        onCheckout: order.status == OrderStatus.ready
+                            ? () {
+                                context.push(
+                                  AppRoutes.orderCheckout,
+                                  extra: order,
+                                );
+                              }
+                            : null,
                       );
                     },
                   ),

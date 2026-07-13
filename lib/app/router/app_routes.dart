@@ -36,4 +36,5 @@ abstract final class AppRoutes {
 
   static const dishOptions = '/dishes/options';
   static const serviceRequests = '/service-requests';
+  static const orderCheckout = '/orders/checkout';
 }

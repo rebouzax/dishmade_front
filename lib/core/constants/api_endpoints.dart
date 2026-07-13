@@ -105,4 +105,10 @@ abstract final class ApiEndpoints {
     required String optionId,
   }) =>
       '/api/dishes/$dishId/option-groups/$groupId/options/$optionId/unavailable';
+
+  static String closeOrderAccount(String id) => '/api/orders/$id/close';
+
+  static String orderPayments(String id) => '/api/orders/$id/payments';
+
+  static String orderReceipt(String id) => '/api/orders/$id/receipt';
 }

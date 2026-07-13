@@ -1,3 +1,4 @@
+import 'package:dishmade_front/features/orders/domain/entities/order_status.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../app/theme/app_colors.dart';
@@ -10,6 +11,7 @@ class OrderCard extends StatelessWidget {
   final VoidCallback onAddItem;
   final VoidCallback? onNextStatus;
   final VoidCallback? onCancel;
+  final VoidCallback? onCheckout;
 
   const OrderCard({
     super.key,
@@ -17,6 +19,7 @@ class OrderCard extends StatelessWidget {
     required this.onAddItem,
     required this.onNextStatus,
     required this.onCancel,
+    this.onCheckout,
   });
 
   @override
@@ -120,6 +123,17 @@ class OrderCard extends StatelessWidget {
                 ),
             ],
           ),
+          if (order.status == OrderStatus.ready && onCheckout != null) ...[
+            const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: onCheckout,
+                icon: const Icon(Icons.receipt_long_rounded),
+                label: const Text('Fechar conta'),
+              ),
+            ),
+          ],
           if (order.status.canCancel) ...[
             const SizedBox(height: 8),
             SizedBox(

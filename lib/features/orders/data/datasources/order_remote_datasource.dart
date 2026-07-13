@@ -7,8 +7,11 @@ import '../../../../core/network/dio_provider.dart';
 import '../../../../core/pagination/paginated_response.dart';
 import '../../domain/entities/order_status.dart';
 import '../dtos/add_order_item_request.dart';
+import '../dtos/close_order_account_request.dart';
 import '../dtos/create_order_request.dart';
 import '../dtos/order_dto.dart';
+import '../dtos/order_receipt_dto.dart';
+import '../dtos/register_order_payment_request.dart';
 import '../dtos/update_order_status_request.dart';
 
 final orderRemoteDataSourceProvider = Provider<OrderRemoteDataSource>((ref) {
@@ -41,6 +44,18 @@ abstract interface class OrderRemoteDataSource {
   });
 
   Future<void> cancelOrder({required String orderId});
+
+  Future<OrderReceiptDto> closeAccount({
+    required String orderId,
+    required CloseOrderAccountRequest request,
+  });
+
+  Future<OrderReceiptDto> registerPayment({
+    required String orderId,
+    required RegisterOrderPaymentRequest request,
+  });
+
+  Future<OrderReceiptDto> getReceipt({required String orderId});
 }
 
 class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
@@ -140,6 +155,53 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
   Future<void> cancelOrder({required String orderId}) async {
     try {
       await _dio.patch<void>(ApiEndpoints.cancelOrder(orderId));
+    } on DioException catch (exception) {
+      throw ApiException.fromDioException(exception);
+    }
+  }
+
+  @override
+  Future<OrderReceiptDto> closeAccount({
+    required String orderId,
+    required CloseOrderAccountRequest request,
+  }) async {
+    try {
+      final response = await _dio.post<Map<String, dynamic>>(
+        ApiEndpoints.closeOrderAccount(orderId),
+        data: request.toJson(),
+      );
+
+      return OrderReceiptDto.fromJson(response.data ?? <String, dynamic>{});
+    } on DioException catch (exception) {
+      throw ApiException.fromDioException(exception);
+    }
+  }
+
+  @override
+  Future<OrderReceiptDto> registerPayment({
+    required String orderId,
+    required RegisterOrderPaymentRequest request,
+  }) async {
+    try {
+      final response = await _dio.post<Map<String, dynamic>>(
+        ApiEndpoints.orderPayments(orderId),
+        data: request.toJson(),
+      );
+
+      return OrderReceiptDto.fromJson(response.data ?? <String, dynamic>{});
+    } on DioException catch (exception) {
+      throw ApiException.fromDioException(exception);
+    }
+  }
+
+  @override
+  Future<OrderReceiptDto> getReceipt({required String orderId}) async {
+    try {
+      final response = await _dio.get<Map<String, dynamic>>(
+        ApiEndpoints.orderReceipt(orderId),
+      );
+
+      return OrderReceiptDto.fromJson(response.data ?? <String, dynamic>{});
     } on DioException catch (exception) {
       throw ApiException.fromDioException(exception);
     }

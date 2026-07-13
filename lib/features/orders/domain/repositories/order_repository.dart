@@ -1,5 +1,7 @@
+import 'package:dishmade_front/features/orders/domain/entities/order_receipt.dart';
 import 'package:dishmade_front/features/orders/domain/entities/order_status.dart';
 import 'package:dishmade_front/features/orders/domain/entities/restaurant_order.dart';
+import 'package:dishmade_front/features/orders/domain/enums/payment_method.dart';
 
 import '../../../../core/pagination/paginated_response.dart';
 
@@ -30,4 +32,19 @@ abstract interface class OrderRepository {
   });
 
   Future<void> cancelOrder({required String orderId});
+
+  Future<OrderReceipt> closeAccount({
+    required String orderId,
+    required double discountAmount,
+    required double serviceFeeAmount,
+  });
+
+  Future<OrderReceipt> registerPayment({
+    required String orderId,
+    required PaymentMethod method,
+    required double amount,
+    String? notes,
+  });
+
+  Future<OrderReceipt> getReceipt({required String orderId});
 }

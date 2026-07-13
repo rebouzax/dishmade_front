@@ -1,12 +1,16 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/pagination/paginated_response.dart';
+import '../../domain/entities/order_receipt.dart';
 import '../../domain/entities/order_status.dart';
 import '../../domain/entities/restaurant_order.dart';
+import '../../domain/enums/payment_method.dart';
 import '../../domain/repositories/order_repository.dart';
 import '../datasources/order_remote_datasource.dart';
 import '../dtos/add_order_item_request.dart';
+import '../dtos/close_order_account_request.dart';
 import '../dtos/create_order_request.dart';
+import '../dtos/register_order_payment_request.dart';
 import '../dtos/update_order_status_request.dart';
 
 final orderRepositoryProvider = Provider<OrderRepository>((ref) {
@@ -90,5 +94,47 @@ class OrderRepositoryImpl implements OrderRepository {
   @override
   Future<void> cancelOrder({required String orderId}) {
     return _remoteDataSource.cancelOrder(orderId: orderId);
+  }
+
+  @override
+  Future<OrderReceipt> closeAccount({
+    required String orderId,
+    required double discountAmount,
+    required double serviceFeeAmount,
+  }) async {
+    final response = await _remoteDataSource.closeAccount(
+      orderId: orderId,
+      request: CloseOrderAccountRequest(
+        discountAmount: discountAmount,
+        serviceFeeAmount: serviceFeeAmount,
+      ),
+    );
+
+    return response.toEntity();
+  }
+
+  @override
+  Future<OrderReceipt> registerPayment({
+    required String orderId,
+    required PaymentMethod method,
+    required double amount,
+    String? notes,
+  }) async {
+    final response = await _remoteDataSource.registerPayment(
+      orderId: orderId,
+      request: RegisterOrderPaymentRequest(
+        method: method,
+        amount: amount,
+        notes: notes,
+      ),
+    );
+
+    return response.toEntity();
+  }
+
+  @override
+  Future<OrderReceipt> getReceipt({required String orderId}) async {
+    final response = await _remoteDataSource.getReceipt(orderId: orderId);
+    return response.toEntity();
   }
 }

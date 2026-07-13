@@ -1,3 +1,6 @@
+import 'package:dishmade_front/features/orders/domain/entities/restaurant_order.dart';
+import 'package:dishmade_front/features/orders/presentation/pages/order_checkout_page.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/service_requests/presentation/pages/service_requests_page.dart';
@@ -121,6 +124,27 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.orders,
         builder: (context, state) => const OrdersPage(),
+      ),
+      GoRoute(
+        path: AppRoutes.orderCheckout,
+        builder: (context, state) {
+          final extra = state.extra;
+
+          if (extra is RestaurantOrder) {
+            return OrderCheckoutPage(
+              orderId: extra.id,
+              initialTableNumber: extra.tableNumber,
+            );
+          }
+
+          if (extra is String) {
+            return OrderCheckoutPage(orderId: extra);
+          }
+
+          return const Scaffold(
+            body: Center(child: Text('Pedido não informado.')),
+          );
+        },
       ),
       GoRoute(
         path: AppRoutes.kitchen,
