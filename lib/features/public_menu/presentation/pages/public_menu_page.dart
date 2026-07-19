@@ -1,16 +1,17 @@
-import 'package:dishmade_front/features/public_menu/domain/entities/public_order.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../domain/entities/public_dish.dart';
+import '../../domain/entities/public_order.dart';
 import '../viewmodels/public_menu_viewmodel.dart';
 import '../viewmodels/public_order_viewmodel.dart';
+import '../widgets/add_public_dish_dialog.dart';
 import '../widgets/public_category_tabs.dart';
 import '../widgets/public_dish_card.dart';
 import '../widgets/public_order_bottom_bar.dart';
 import '../widgets/public_order_details_sheet.dart';
-import '../widgets/add_public_dish_dialog.dart';
+import '../../../../features/service_requests/presentation/viewmodels/public_service_request_viewmodel.dart';
 import '../../../../features/service_requests/presentation/widgets/service_request_dialog.dart';
 
 class PublicMenuPage extends ConsumerStatefulWidget {
@@ -34,6 +35,7 @@ class _PublicMenuPageState extends ConsumerState<PublicMenuPage> {
 
     Future.microtask(() {
       ref.read(publicMenuViewModelProvider.notifier).loadMenu(widget.slug);
+
       ref
           .read(publicOrderViewModelProvider.notifier)
           .restoreOrder(
@@ -48,8 +50,11 @@ class _PublicMenuPageState extends ConsumerState<PublicMenuPage> {
     final state = ref.watch(publicMenuViewModelProvider);
     final viewModel = ref.read(publicMenuViewModelProvider.notifier);
     final menu = state.menu;
+
     final orderState = ref.watch(publicOrderViewModelProvider);
-    ref.read(publicOrderViewModelProvider.notifier);
+    final serviceRequestState = ref.watch(
+      publicServiceRequestViewModelProvider,
+    );
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -57,11 +62,21 @@ class _PublicMenuPageState extends ConsumerState<PublicMenuPage> {
         backgroundColor: AppColors.background,
         elevation: 0,
         actions: [
-          IconButton(
-            tooltip: 'Solicitar atendimento',
-            onPressed: () => _openServiceRequest(),
-            icon: const Icon(Icons.support_agent_rounded),
-          ),
+          if (widget.initialTableNumber != null)
+            IconButton(
+              tooltip: menu == null
+                  ? 'Carregando atendimento'
+                  : menu.acceptsWaiterCall
+                  ? 'Chamar garçom'
+                  : 'Chamada de garçom indisponível',
+              onPressed:
+                  menu == null ||
+                      !menu.acceptsWaiterCall ||
+                      serviceRequestState.isSending
+                  ? null
+                  : _openServiceRequest,
+              icon: const Icon(Icons.support_agent_rounded),
+            ),
         ],
       ),
       bottomNavigationBar: orderState.order == null
@@ -106,6 +121,13 @@ class _PublicMenuPageState extends ConsumerState<PublicMenuPage> {
                         ),
                       ),
                     ),
+                    if (!menu.acceptsQrCodeOrders)
+                      const SliverToBoxAdapter(
+                        child: Padding(
+                          padding: EdgeInsets.fromLTRB(20, 8, 20, 8),
+                          child: _QrCodeOrdersDisabledBanner(),
+                        ),
+                      ),
                     SliverToBoxAdapter(
                       child: Padding(
                         padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
@@ -130,7 +152,14 @@ class _PublicMenuPageState extends ConsumerState<PublicMenuPage> {
 
                             return PublicDishCard(
                               dish: dish,
-                              onAdd: () => _handleAddDish(dish),
+                              onAdd: () {
+                                if (!menu.acceptsQrCodeOrders) {
+                                  _showQrCodeOrdersDisabledMessage();
+                                  return;
+                                }
+
+                                _handleAddDish(dish);
+                              },
                             );
                           }, childCount: state.visibleDishes.length),
                           gridDelegate:
@@ -168,7 +197,14 @@ class _PublicMenuPageState extends ConsumerState<PublicMenuPage> {
     return 0.88;
   }
 
-  Future _handleAddDish(PublicDish dish) async {
+  Future<void> _handleAddDish(PublicDish dish) async {
+    final menu = ref.read(publicMenuViewModelProvider).menu;
+
+    if (menu != null && !menu.acceptsQrCodeOrders) {
+      _showQrCodeOrdersDisabledMessage();
+      return;
+    }
+
     final orderViewModel = ref.read(publicOrderViewModelProvider.notifier);
     final currentOrder = ref.read(publicOrderViewModelProvider).order;
 
@@ -218,7 +254,7 @@ class _PublicMenuPageState extends ConsumerState<PublicMenuPage> {
   Future<int?> _askTableNumber() async {
     final controller = TextEditingController();
 
-    final result = await showDialog(
+    final result = await showDialog<int>(
       context: context,
       barrierDismissible: false,
       builder: (context) {
@@ -259,57 +295,12 @@ class _PublicMenuPageState extends ConsumerState<PublicMenuPage> {
       },
     );
 
-    return result;
-  }
-
-  Future<int?> _askQuantity(PublicDish dish) async {
-    final controller = TextEditingController(text: '1');
-
-    final result = await showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text(dish.name),
-          content: TextField(
-            controller: controller,
-            autofocus: true,
-            keyboardType: TextInputType.number,
-            decoration: const InputDecoration(
-              labelText: 'Quantidade',
-              prefixIcon: Icon(Icons.numbers_rounded),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancelar'),
-            ),
-            FilledButton(
-              onPressed: () {
-                final quantity = int.tryParse(controller.text.trim());
-
-                if (quantity == null || quantity <= 0) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Informe uma quantidade válida.'),
-                    ),
-                  );
-                  return;
-                }
-
-                Navigator.of(context).pop(quantity);
-              },
-              child: const Text('Confirmar'),
-            ),
-          ],
-        );
-      },
-    );
+    controller.dispose();
 
     return result;
   }
 
-  Future _openOrderDetails(PublicOrder order) async {
+  Future<void> _openOrderDetails(PublicOrder order) async {
     await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -326,6 +317,19 @@ class _PublicMenuPageState extends ConsumerState<PublicMenuPage> {
   }
 
   Future<void> _openServiceRequest() async {
+    final menu = ref.read(publicMenuViewModelProvider).menu;
+
+    if (menu != null && !menu.acceptsWaiterCall) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Este restaurante não aceita chamadas de garçom pelo QR Code no momento.',
+          ),
+        ),
+      );
+      return;
+    }
+
     final tableNumber = widget.initialTableNumber ?? await _askTableNumber();
 
     if (!mounted || tableNumber == null) return;
@@ -350,6 +354,16 @@ class _PublicMenuPageState extends ConsumerState<PublicMenuPage> {
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  void _showQrCodeOrdersDisabledMessage() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'Este restaurante não aceita pedidos pelo QR Code no momento.',
+        ),
+      ),
+    );
   }
 }
 
@@ -409,6 +423,40 @@ class _Header extends StatelessWidget {
                   ),
                 ),
               ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _QrCodeOrdersDisabledBanner extends StatelessWidget {
+  const _QrCodeOrdersDisabledBanner();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.warning.withOpacity(0.10),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.warning.withOpacity(0.25)),
+      ),
+      child: const Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.info_outline_rounded, color: AppColors.warning),
+          SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              'Pedidos pelo QR Code estão desativados no momento. '
+              'O cardápio está disponível apenas para consulta.',
+              style: TextStyle(
+                color: AppColors.warning,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
         ],

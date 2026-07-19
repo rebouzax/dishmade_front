@@ -9,12 +9,14 @@ class CloseOrderAccountUseCase {
   Future<OrderReceipt> call({
     required String orderId,
     required double discountAmount,
-    required double serviceFeeAmount,
+    required double? serviceFeeAmount,
+    required bool useDefaultServiceFee,
   }) {
     return _repository.closeAccount(
       orderId: orderId,
       discountAmount: discountAmount,
       serviceFeeAmount: serviceFeeAmount,
+      useDefaultServiceFee: useDefaultServiceFee,
     );
   }
 }

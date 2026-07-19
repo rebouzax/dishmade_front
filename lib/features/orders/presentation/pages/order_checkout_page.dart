@@ -151,6 +151,7 @@ class _OrderCheckoutPageState extends ConsumerState<OrderCheckoutPage> {
           orderId: widget.orderId,
           discountAmount: result.discountAmount,
           serviceFeeAmount: result.serviceFeeAmount,
+          useDefaultServiceFee: result.useDefaultServiceFee,
         );
 
     if (!mounted || !success) return;
@@ -585,11 +586,13 @@ class _ErrorBanner extends StatelessWidget {
 
 class _CloseAccountResult {
   final double discountAmount;
-  final double serviceFeeAmount;
+  final double? serviceFeeAmount;
+  final bool useDefaultServiceFee;
 
   const _CloseAccountResult({
     required this.discountAmount,
     required this.serviceFeeAmount,
+    required this.useDefaultServiceFee,
   });
 }
 
@@ -605,6 +608,8 @@ class _CloseAccountDialogState extends State<_CloseAccountDialog> {
   final _discountController = TextEditingController(text: '0');
   final _serviceFeeController = TextEditingController(text: '0');
 
+  bool _useDefaultServiceFee = true;
+
   @override
   void dispose() {
     _discountController.dispose();
@@ -617,42 +622,63 @@ class _CloseAccountDialogState extends State<_CloseAccountDialog> {
     return AlertDialog(
       title: const Text('Fechar conta'),
       content: SizedBox(
-        width: 420,
+        width: 460,
         child: Form(
           key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextFormField(
-                controller: _discountController,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextFormField(
+                  controller: _discountController,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'[0-9,.]')),
+                  ],
+                  decoration: const InputDecoration(
+                    labelText: 'Desconto',
+                    prefixIcon: Icon(Icons.discount_rounded),
+                  ),
+                  validator: _validateNonNegativeMoney,
                 ),
-                inputFormatters: [
-                  FilteringTextInputFormatter.allow(RegExp(r'[0-9,.]')),
-                ],
-                decoration: const InputDecoration(
-                  labelText: 'Desconto',
-                  prefixIcon: Icon(Icons.discount_rounded),
+                const SizedBox(height: 12),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  value: _useDefaultServiceFee,
+                  title: const Text('Usar taxa de serviço padrão'),
+                  subtitle: const Text(
+                    'O backend calculará a taxa com base na configuração do restaurante.',
+                  ),
+                  onChanged: (value) {
+                    setState(() {
+                      _useDefaultServiceFee = value;
+                    });
+                  },
                 ),
-                validator: _validateMoney,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _serviceFeeController,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: _serviceFeeController,
+                  enabled: !_useDefaultServiceFee,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'[0-9,.]')),
+                  ],
+                  decoration: const InputDecoration(
+                    labelText: 'Taxa de serviço manual',
+                    prefixIcon: Icon(Icons.room_service_rounded),
+                  ),
+                  validator: (value) {
+                    if (_useDefaultServiceFee) return null;
+
+                    return _validateNonNegativeMoney(value);
+                  },
                 ),
-                inputFormatters: [
-                  FilteringTextInputFormatter.allow(RegExp(r'[0-9,.]')),
-                ],
-                decoration: const InputDecoration(
-                  labelText: 'Taxa de serviço',
-                  prefixIcon: Icon(Icons.room_service_rounded),
-                ),
-                validator: _validateMoney,
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -666,7 +692,7 @@ class _CloseAccountDialogState extends State<_CloseAccountDialog> {
     );
   }
 
-  String? _validateMoney(String? value) {
+  String? _validateNonNegativeMoney(String? value) {
     final number = _parseMoney(value ?? '');
 
     if (number == null) {
@@ -688,7 +714,10 @@ class _CloseAccountDialogState extends State<_CloseAccountDialog> {
     Navigator.of(context).pop(
       _CloseAccountResult(
         discountAmount: _parseMoney(_discountController.text) ?? 0,
-        serviceFeeAmount: _parseMoney(_serviceFeeController.text) ?? 0,
+        serviceFeeAmount: _useDefaultServiceFee
+            ? null
+            : _parseMoney(_serviceFeeController.text) ?? 0,
+        useDefaultServiceFee: _useDefaultServiceFee,
       ),
     );
   }
@@ -767,7 +796,10 @@ class _RegisterPaymentDialogState extends State<_RegisterPaymentDialog> {
                       .toList(),
                   onChanged: (value) {
                     if (value == null) return;
-                    setState(() => _method = value);
+
+                    setState(() {
+                      _method = value;
+                    });
                   },
                 ),
                 const SizedBox(height: 12),

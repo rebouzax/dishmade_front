@@ -77,6 +77,14 @@ class HomePage extends ConsumerWidget {
         color: AppColors.success,
         route: AppRoutes.serviceRequests,
       ),
+      _HomeModule(
+        title: 'Configurações',
+        description:
+            'Taxa de serviço, pedidos via QR Code e chamada de garçom.',
+        icon: Icons.settings_rounded,
+        color: AppColors.primary,
+        route: AppRoutes.restaurantSettings,
+      ),
     ];
 
     return Scaffold(

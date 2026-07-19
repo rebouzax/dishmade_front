@@ -7,6 +7,9 @@ class PublicMenuDto {
   final String slug;
   final String menuUrl;
   final String qrCodeUrl;
+  final double defaultServiceFeePercentage;
+  final bool acceptsQrCodeOrders;
+  final bool acceptsWaiterCall;
   final List<PublicCategoryDto> categories;
 
   const PublicMenuDto({
@@ -15,6 +18,9 @@ class PublicMenuDto {
     required this.slug,
     required this.menuUrl,
     required this.qrCodeUrl,
+    required this.defaultServiceFeePercentage,
+    required this.acceptsQrCodeOrders,
+    required this.acceptsWaiterCall,
     required this.categories,
   });
 
@@ -27,6 +33,10 @@ class PublicMenuDto {
       slug: json['slug']?.toString() ?? '',
       menuUrl: json['menuUrl']?.toString() ?? '',
       qrCodeUrl: json['qrCodeUrl']?.toString() ?? '',
+      defaultServiceFeePercentage:
+          (json['defaultServiceFeePercentage'] as num?)?.toDouble() ?? 0,
+      acceptsQrCodeOrders: json['acceptsQrCodeOrders'] as bool? ?? true,
+      acceptsWaiterCall: json['acceptsWaiterCall'] as bool? ?? true,
       categories: rawCategories is List
           ? rawCategories
                 .whereType<Map<String, dynamic>>()
@@ -43,6 +53,9 @@ class PublicMenuDto {
       slug: slug,
       menuUrl: menuUrl,
       qrCodeUrl: qrCodeUrl,
+      defaultServiceFeePercentage: defaultServiceFeePercentage,
+      acceptsQrCodeOrders: acceptsQrCodeOrders,
+      acceptsWaiterCall: acceptsWaiterCall,
       categories: categories.map((category) => category.toEntity()).toList(),
     );
   }

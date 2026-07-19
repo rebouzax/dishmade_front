@@ -36,7 +36,8 @@ abstract interface class OrderRepository {
   Future<OrderReceipt> closeAccount({
     required String orderId,
     required double discountAmount,
-    required double serviceFeeAmount,
+    required double? serviceFeeAmount,
+    required bool useDefaultServiceFee,
   });
 
   Future<OrderReceipt> registerPayment({

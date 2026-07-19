@@ -111,4 +111,5 @@ abstract final class ApiEndpoints {
   static String orderPayments(String id) => '/api/orders/$id/payments';
 
   static String orderReceipt(String id) => '/api/orders/$id/receipt';
+  static const restaurantSettings = '/api/restaurant-settings';
 }

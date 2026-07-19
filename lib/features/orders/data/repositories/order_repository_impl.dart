@@ -100,13 +100,15 @@ class OrderRepositoryImpl implements OrderRepository {
   Future<OrderReceipt> closeAccount({
     required String orderId,
     required double discountAmount,
-    required double serviceFeeAmount,
+    required double? serviceFeeAmount,
+    required bool useDefaultServiceFee,
   }) async {
     final response = await _remoteDataSource.closeAccount(
       orderId: orderId,
       request: CloseOrderAccountRequest(
         discountAmount: discountAmount,
         serviceFeeAmount: serviceFeeAmount,
+        useDefaultServiceFee: useDefaultServiceFee,
       ),
     );
 

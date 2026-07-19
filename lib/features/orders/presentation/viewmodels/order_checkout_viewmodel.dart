@@ -62,28 +62,39 @@ class OrderCheckoutViewModel extends Notifier<OrderCheckoutState> {
   }
 
   Future<bool> closeAccount({
-    required String orderId,
-    required double discountAmount,
-    required double serviceFeeAmount,
+  required String orderId,
+  required double discountAmount,
+  required double? serviceFeeAmount,
+  required bool useDefaultServiceFee,
   }) async {
-    state = state.copyWith(isSaving: true, errorMessage: null);
+    state = state.copyWith(
+      isSaving: true,
+      errorMessage: null,
+    );
 
     try {
       final receipt = await _closeUseCase(
         orderId: orderId,
         discountAmount: discountAmount,
         serviceFeeAmount: serviceFeeAmount,
+        useDefaultServiceFee: useDefaultServiceFee,
       );
 
       if (!ref.mounted) return false;
 
-      state = state.copyWith(receipt: receipt, isSaving: false);
+      state = state.copyWith(
+        receipt: receipt,
+        isSaving: false,
+      );
 
       return true;
     } catch (error) {
       if (!ref.mounted) return false;
 
-      state = state.copyWith(isSaving: false, errorMessage: _mapError(error));
+      state = state.copyWith(
+        isSaving: false,
+        errorMessage: _mapError(error),
+      );
 
       return false;
     }

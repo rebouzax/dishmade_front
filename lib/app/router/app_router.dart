@@ -19,6 +19,7 @@ import '../../features/orders/presentation/pages/orders_page.dart';
 import '../../features/public_menu/presentation/pages/public_menu_page.dart';
 import '../../features/sales_history/presentation/pages/sales_history_page.dart';
 import '../../features/tables/presentation/pages/tables_page.dart';
+import '../../features/restaurant_settings/presentation/pages/restaurant_settings_page.dart';
 import 'app_routes.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -153,6 +154,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.salesHistory,
         builder: (context, state) => const SalesHistoryPage(),
+      ),
+      GoRoute(
+        path: AppRoutes.restaurantSettings,
+        builder: (context, state) => const RestaurantSettingsPage(),
       ),
       GoRoute(
         path: AppRoutes.serviceRequests,

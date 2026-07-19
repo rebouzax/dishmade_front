@@ -7,6 +7,9 @@ class PublicMenu {
   final String slug;
   final String menuUrl;
   final String qrCodeUrl;
+  final double defaultServiceFeePercentage;
+  final bool acceptsQrCodeOrders;
+  final bool acceptsWaiterCall;
   final List<PublicCategory> categories;
 
   const PublicMenu({
@@ -15,6 +18,9 @@ class PublicMenu {
     required this.slug,
     required this.menuUrl,
     required this.qrCodeUrl,
+    required this.defaultServiceFeePercentage,
+    required this.acceptsQrCodeOrders,
+    required this.acceptsWaiterCall,
     required this.categories,
   });
 
