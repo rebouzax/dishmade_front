@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/app_colors.dart';
+import '../../../../core/realtime/kitchen_realtime_controller.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../domain/entities/service_request.dart';
 import '../../domain/enums/service_request_status.dart';
@@ -23,6 +24,7 @@ class _ServiceRequestsPageState extends ConsumerState<ServiceRequestsPage> {
 
     Future.microtask(() {
       ref.read(serviceRequestsViewModelProvider.notifier).loadInitial();
+      ref.read(kitchenRealtimeControllerProvider.notifier).connect();
     });
   }
 

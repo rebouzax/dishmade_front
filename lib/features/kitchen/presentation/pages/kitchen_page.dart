@@ -4,16 +4,32 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../app/theme/app_colors.dart';
+import '../../../../core/realtime/kitchen_realtime_controller.dart';
 import '../../../orders/domain/entities/order_status.dart';
 import '../../../orders/domain/entities/restaurant_order.dart';
 import '../viewmodels/kitchen_viewmodel.dart';
 import '../widgets/kitchen_column.dart';
 
-class KitchenPage extends ConsumerWidget {
+class KitchenPage extends ConsumerStatefulWidget {
   const KitchenPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<KitchenPage> createState() => _KitchenPageState();
+}
+
+class _KitchenPageState extends ConsumerState<KitchenPage> {
+  @override
+  void initState() {
+    super.initState();
+
+    Future.microtask(() {
+      ref.read(kitchenViewModelProvider.notifier).refresh();
+      ref.read(kitchenRealtimeControllerProvider.notifier).connect();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final state = ref.watch(kitchenViewModelProvider);
     final viewModel = ref.read(kitchenViewModelProvider.notifier);
 
