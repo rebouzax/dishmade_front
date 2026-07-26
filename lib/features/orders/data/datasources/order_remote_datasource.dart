@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:dishmade_front/features/orders/data/dtos/update_order_item_status_request.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/api_endpoints.dart';
@@ -53,6 +54,12 @@ abstract interface class OrderRemoteDataSource {
   Future<OrderReceiptDto> registerPayment({
     required String orderId,
     required RegisterOrderPaymentRequest request,
+  });
+
+  Future<OrderDto> updateItemStatus({
+    required String orderId,
+    required String itemId,
+    required UpdateOrderItemStatusRequest request,
   });
 
   Future<OrderReceiptDto> getReceipt({required String orderId});
@@ -202,6 +209,24 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
       );
 
       return OrderReceiptDto.fromJson(response.data ?? <String, dynamic>{});
+    } on DioException catch (exception) {
+      throw ApiException.fromDioException(exception);
+    }
+  }
+
+  @override
+  Future<OrderDto> updateItemStatus({
+    required String orderId,
+    required String itemId,
+    required UpdateOrderItemStatusRequest request,
+  }) async {
+    try {
+      final response = await _dio.patch<Map<String, dynamic>>(
+        ApiEndpoints.updateOrderItemStatus(orderId: orderId, itemId: itemId),
+        data: request.toJson(),
+      );
+
+      return OrderDto.fromJson(response.data ?? <String, dynamic>{});
     } on DioException catch (exception) {
       throw ApiException.fromDioException(exception);
     }

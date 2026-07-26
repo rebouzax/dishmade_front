@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../core/realtime/kitchen_realtime_controller.dart';
+import '../../../orders/domain/entities/order_item_status.dart';
 import '../../../orders/domain/entities/order_status.dart';
 import '../../../orders/domain/entities/restaurant_order.dart';
 import '../viewmodels/kitchen_viewmodel.dart';
@@ -95,6 +96,15 @@ class _KitchenPageState extends ConsumerState<KitchenPage> {
                                 processingOrderId: state.processingOrderId,
                                 onAdvance: (order) =>
                                     _advanceOrder(context, ref, order),
+                                onUpdateItemStatus: (order, itemId, status) {
+                                  return _updateItemStatus(
+                                    context,
+                                    ref,
+                                    order,
+                                    itemId,
+                                    status,
+                                  );
+                                },
                               ),
                             ),
                             const SizedBox(width: 14),
@@ -109,6 +119,15 @@ class _KitchenPageState extends ConsumerState<KitchenPage> {
                                 processingOrderId: state.processingOrderId,
                                 onAdvance: (order) =>
                                     _advanceOrder(context, ref, order),
+                                onUpdateItemStatus: (order, itemId, status) {
+                                  return _updateItemStatus(
+                                    context,
+                                    ref,
+                                    order,
+                                    itemId,
+                                    status,
+                                  );
+                                },
                               ),
                             ),
                             const SizedBox(width: 14),
@@ -123,6 +142,15 @@ class _KitchenPageState extends ConsumerState<KitchenPage> {
                                 processingOrderId: state.processingOrderId,
                                 onAdvance: (order) =>
                                     _advanceOrder(context, ref, order),
+                                onUpdateItemStatus: (order, itemId, status) {
+                                  return _updateItemStatus(
+                                    context,
+                                    ref,
+                                    order,
+                                    itemId,
+                                    status,
+                                  );
+                                },
                               ),
                             ),
                           ],
@@ -140,6 +168,15 @@ class _KitchenPageState extends ConsumerState<KitchenPage> {
                               processingOrderId: state.processingOrderId,
                               onAdvance: (order) =>
                                   _advanceOrder(context, ref, order),
+                              onUpdateItemStatus: (order, itemId, status) {
+                                return _updateItemStatus(
+                                  context,
+                                  ref,
+                                  order,
+                                  itemId,
+                                  status,
+                                );
+                              },
                             ),
                             const SizedBox(height: 14),
                             KitchenColumn(
@@ -152,6 +189,15 @@ class _KitchenPageState extends ConsumerState<KitchenPage> {
                               processingOrderId: state.processingOrderId,
                               onAdvance: (order) =>
                                   _advanceOrder(context, ref, order),
+                              onUpdateItemStatus: (order, itemId, status) {
+                                return _updateItemStatus(
+                                  context,
+                                  ref,
+                                  order,
+                                  itemId,
+                                  status,
+                                );
+                              },
                             ),
                             const SizedBox(height: 14),
                             KitchenColumn(
@@ -164,6 +210,15 @@ class _KitchenPageState extends ConsumerState<KitchenPage> {
                               processingOrderId: state.processingOrderId,
                               onAdvance: (order) =>
                                   _advanceOrder(context, ref, order),
+                              onUpdateItemStatus: (order, itemId, status) {
+                                return _updateItemStatus(
+                                  context,
+                                  ref,
+                                  order,
+                                  itemId,
+                                  status,
+                                );
+                              },
                             ),
                           ],
                         ),
@@ -202,6 +257,24 @@ class _KitchenPageState extends ConsumerState<KitchenPage> {
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  Future<void> _updateItemStatus(
+    BuildContext context,
+    WidgetRef ref,
+    RestaurantOrder order,
+    String itemId,
+    OrderItemStatus status,
+  ) async {
+    final success = await ref
+        .read(kitchenViewModelProvider.notifier)
+        .updateItemStatus(orderId: order.id, itemId: itemId, status: status);
+
+    if (!context.mounted || !success) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Item atualizado para "${status.label}".')),
+    );
   }
 }
 

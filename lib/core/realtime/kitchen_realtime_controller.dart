@@ -51,6 +51,7 @@ class KitchenRealtimeController extends Notifier<bool> {
       case KitchenRealtimeEvents.orderStatusChanged:
       case KitchenRealtimeEvents.orderCanceled:
       case KitchenRealtimeEvents.orderDelivered:
+      case KitchenRealtimeEvents.orderItemStatusChanged:
         _refreshKitchenAndOrders();
         break;
 

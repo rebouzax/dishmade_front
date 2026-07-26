@@ -1,3 +1,5 @@
+import 'package:dishmade_front/features/orders/data/dtos/update_order_item_status_request.dart';
+import 'package:dishmade_front/features/orders/domain/entities/order_item_status.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/pagination/paginated_response.dart';
@@ -137,6 +139,21 @@ class OrderRepositoryImpl implements OrderRepository {
   @override
   Future<OrderReceipt> getReceipt({required String orderId}) async {
     final response = await _remoteDataSource.getReceipt(orderId: orderId);
+    return response.toEntity();
+  }
+
+  @override
+  Future<RestaurantOrder> updateItemStatus({
+    required String orderId,
+    required String itemId,
+    required OrderItemStatus status,
+  }) async {
+    final response = await _remoteDataSource.updateItemStatus(
+      orderId: orderId,
+      itemId: itemId,
+      request: UpdateOrderItemStatusRequest(status: status),
+    );
+
     return response.toEntity();
   }
 }

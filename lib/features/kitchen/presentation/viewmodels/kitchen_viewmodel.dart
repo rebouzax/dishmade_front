@@ -1,4 +1,6 @@
+import 'package:dishmade_front/features/orders/domain/entities/order_item_status.dart';
 import 'package:dishmade_front/features/orders/domain/usescases/get_orders_usecase.dart';
+import 'package:dishmade_front/features/orders/domain/usescases/update_order_item_status_usecase.dart';
 import 'package:dishmade_front/features/orders/domain/usescases/update_order_status_usecase.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -19,6 +21,12 @@ final kitchenUpdateOrderStatusUseCaseProvider =
       return UpdateOrderStatusUseCase(repository);
     });
 
+final kitchenUpdateOrderItemStatusUseCaseProvider =
+    Provider<UpdateOrderItemStatusUseCase>((ref) {
+      final repository = ref.watch(orderRepositoryProvider);
+      return UpdateOrderItemStatusUseCase(repository);
+    });
+
 final kitchenViewModelProvider =
     NotifierProvider.autoDispose<KitchenViewModel, KitchenState>(
       KitchenViewModel.new,
@@ -27,12 +35,18 @@ final kitchenViewModelProvider =
 class KitchenViewModel extends Notifier<KitchenState> {
   late final GetOrdersUseCase _getOrdersUseCase;
   late final UpdateOrderStatusUseCase _updateOrderStatusUseCase;
+  late final UpdateOrderItemStatusUseCase _updateOrderItemStatusUseCase;
 
   @override
   KitchenState build() {
     _getOrdersUseCase = ref.watch(kitchenGetOrdersUseCaseProvider);
+
     _updateOrderStatusUseCase = ref.watch(
       kitchenUpdateOrderStatusUseCaseProvider,
+    );
+
+    _updateOrderItemStatusUseCase = ref.watch(
+      kitchenUpdateOrderItemStatusUseCaseProvider,
     );
 
     Future.microtask(loadInitial);
@@ -69,12 +83,19 @@ class KitchenViewModel extends Notifier<KitchenState> {
         inPreparationOrders: responses[1].items,
         readyOrders: responses[2].items,
         isLoading: false,
+        isSaving: false,
+        processingOrderId: null,
         lastUpdatedAt: DateTime.now(),
       );
     } catch (error) {
       if (!ref.mounted) return;
 
-      state = state.copyWith(isLoading: false, errorMessage: _mapError(error));
+      state = state.copyWith(
+        isLoading: false,
+        isSaving: false,
+        processingOrderId: null,
+        errorMessage: _mapError(error),
+      );
     }
   }
 
@@ -97,6 +118,44 @@ class KitchenViewModel extends Notifier<KitchenState> {
 
     try {
       await _updateOrderStatusUseCase(orderId: order.id, status: nextStatus);
+
+      await loadInitial();
+
+      if (!ref.mounted) return false;
+
+      state = state.copyWith(isSaving: false, processingOrderId: null);
+
+      return true;
+    } catch (error) {
+      if (!ref.mounted) return false;
+
+      state = state.copyWith(
+        isSaving: false,
+        processingOrderId: null,
+        errorMessage: _mapError(error),
+      );
+
+      return false;
+    }
+  }
+
+  Future<bool> updateItemStatus({
+    required String orderId,
+    required String itemId,
+    required OrderItemStatus status,
+  }) async {
+    state = state.copyWith(
+      isSaving: true,
+      processingOrderId: orderId,
+      errorMessage: null,
+    );
+
+    try {
+      await _updateOrderItemStatusUseCase(
+        orderId: orderId,
+        itemId: itemId,
+        status: status,
+      );
 
       await loadInitial();
 

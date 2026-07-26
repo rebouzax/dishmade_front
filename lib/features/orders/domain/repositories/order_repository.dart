@@ -1,3 +1,4 @@
+import 'package:dishmade_front/features/orders/domain/entities/order_item_status.dart';
 import 'package:dishmade_front/features/orders/domain/entities/order_receipt.dart';
 import 'package:dishmade_front/features/orders/domain/entities/order_status.dart';
 import 'package:dishmade_front/features/orders/domain/entities/restaurant_order.dart';
@@ -47,5 +48,10 @@ abstract interface class OrderRepository {
     String? notes,
   });
 
+  Future<RestaurantOrder> updateItemStatus({
+    required String orderId,
+    required String itemId,
+    required OrderItemStatus status,
+  });
   Future<OrderReceipt> getReceipt({required String orderId});
 }

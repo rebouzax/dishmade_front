@@ -8,6 +8,7 @@ class KitchenRealtimeEvents {
   static const orderDelivered = 'KitchenOrderDelivered';
   static const serviceRequestCreated = 'KitchenServiceRequestCreated';
   static const serviceRequestUpdated = 'KitchenServiceRequestUpdated';
+  static const orderItemStatusChanged = 'KitchenOrderItemStatusChanged';
 
   static const all = [
     orderCreated,
@@ -17,5 +18,6 @@ class KitchenRealtimeEvents {
     orderDelivered,
     serviceRequestCreated,
     serviceRequestUpdated,
+    orderItemStatusChanged,
   ];
 }

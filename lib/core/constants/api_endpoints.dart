@@ -106,6 +106,11 @@ abstract final class ApiEndpoints {
   }) =>
       '/api/dishes/$dishId/option-groups/$groupId/options/$optionId/unavailable';
 
+  static String updateOrderItemStatus({
+    required String orderId,
+    required String itemId,
+  }) => '/api/orders/$orderId/items/$itemId/status';
+
   static String closeOrderAccount(String id) => '/api/orders/$id/close';
 
   static String orderPayments(String id) => '/api/orders/$id/payments';

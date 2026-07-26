@@ -1,3 +1,4 @@
+import 'package:dishmade_front/features/orders/domain/entities/order_item_status.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../app/theme/app_colors.dart';
@@ -14,6 +15,13 @@ class KitchenColumn extends StatelessWidget {
   final String? processingOrderId;
   final ValueChanged<RestaurantOrder> onAdvance;
 
+  final Future<void> Function(
+    RestaurantOrder order,
+    String itemId,
+    OrderItemStatus status,
+  )
+  onUpdateItemStatus;
+
   const KitchenColumn({
     super.key,
     required this.title,
@@ -24,6 +32,7 @@ class KitchenColumn extends StatelessWidget {
     required this.emptyMessage,
     required this.processingOrderId,
     required this.onAdvance,
+    required this.onUpdateItemStatus,
   });
 
   @override
@@ -98,6 +107,9 @@ class KitchenColumn extends StatelessWidget {
                   order: order,
                   isProcessing: processingOrderId == order.id,
                   onAdvance: () => onAdvance(order),
+                  onUpdateItemStatus: (itemId, status) {
+                    return onUpdateItemStatus(order, itemId, status);
+                  },
                 ),
               ),
             ),
